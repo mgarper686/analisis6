@@ -84,6 +84,7 @@ body.drawlock .stage.edit{touch-action:none!important}
 </style>
 <style id="r8-css">#bFix[aria-pressed=true]{background:#13803A;color:#fff;border-color:#13803A}body.drawlock{overflow:hidden;overscroll-behavior:none}body.drawlock .stage.edit .scroll,body.drawlock .scroll{overflow:hidden}</style>
 <style>.lvdot.lost{background:#e08a00!important}</style>
+<style>.fb.col{background:#13803A;box-shadow:0 0 0 3px #F29A00}</style>
 </head><body>
 <title>Periodos clásicos</title>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -830,8 +831,9 @@ const fmtT=t=>{t=Math.floor(t||0);return Math.floor(t/60)+':'+String(t%60).padSt
 function clearWipe(){ document.querySelectorAll('.box[data-s]').forEach(el=>{el.style.clipPath=''});
   document.querySelectorAll('.marks [data-w]').forEach(el=>{ el.style.visibility=''; el.classList.remove('wip'); }); }
 function wipeOn(){ const c=$('#audchk'); return !!(au&&c&&c.checked&&!sync&&!(st.mode==='T'&&st.hide)); }
-function applyWipe(t){ // recuadros, corchetes y textos aparecen de izquierda a derecha al ritmo de la música
-  clearWipe(); if(!wipeOn()) return; const n=E().n, pos=t2pos(n,t);
+window.__wipeAt=t=>{ if(t==null){ clearWipe(); return; } applyWipe(t,true); };
+function applyWipe(t,force){ // recuadros, corchetes y textos aparecen de izquierda a derecha al ritmo de la música
+  clearWipe(); if(!force&&!wipeOn()) return; const n=E().n, pos=t2pos(n,t);
   const pOf=el=>+((el.closest('.stage')||{dataset:{p:0}}).dataset.p), mine=el=>/^ann/.test(el.dataset.ref||'')||el.classList.contains('ghost');
   document.querySelectorAll('.box[data-s]').forEach(el=>{ if(mine(el)) return;
     const p=pOf(el), x=parseFloat(el.style.left), w=parseFloat(el.style.width), y=parseFloat(el.style.top)+parseFloat(el.style.height)/2;
@@ -954,7 +956,7 @@ function paint(stg,anim){
     const vs=window.__viewSub; if(vs&&vs.n===E().n) vs.items.filter(it=>it.p===p).forEach(it=>draw(it,fills,marks,{src:'watch',id:'v'}));
   }else{
     solItems().filter(it=>it.k==='l'&&it.p===p).forEach(it=>draw(it,fills,marks,{src:'watch',id:it.i}));
-    if(st.compare) cmpItems().filter(it=>it.p===p&&it.k!=='l').forEach(it=>{draw(it,fills,marks,{src:(st.fb&&st.fb.clean)?'watch':'ghost',id:it.i}); const r=st.fb&&!st.fb.clean&&st.fb.n===E().n&&st.fb.res[it.i]; if(r){const d=document.createElement('div');d.className='fb '+r;d.textContent=r==='ok'?'✓':r==='part'?'~':'✗';d.style.left=it.x+'%';d.style.top=it.y+'%';marks.appendChild(d);}});
+    if(st.compare) cmpItems().filter(it=>it.p===p&&it.k!=='l').forEach(it=>{draw(it,fills,marks,{src:(st.fb&&st.fb.clean)?'watch':'ghost',id:it.i}); const r=st.fb&&!st.fb.clean&&st.fb.n===E().n&&st.fb.res[it.i]; if(r){const d=document.createElement('div');d.className='fb '+r;d.textContent=r==='ok'||r==='col'?'✓':r==='part'?'~':'✗';if(r==='col')d.title='Bien, pero el color no es el correcto';d.style.left=it.x+'%';d.style.top=it.y+'%';marks.appendChild(d);}});
     if(st.watch>0) solItems().filter(it=>it.p===p&&it.k!=='l'&&it.s<=st.watch).forEach(it=>draw(it,fills,marks,{src:'watch',id:it.i,fresh:watchFresh&&it.s===st.watch}));
     annOf().filter(it=>it.p===p).forEach(it=>draw(it,fills,marks,{src:'ann',id:it.id}));
   }
@@ -1122,29 +1124,40 @@ const iou=(a,b)=>{const x1=Math.max(a.x,b.x),y1=Math.max(a.y,b.y),x2=Math.min(a.
 const cn=c=>c==='Y2'?'Y':c; // los dos tonos de amarillo cuentan como amarillo
 const labIn=(it,m,mine)=>mine.some(t=>t.k==='t'&&t.p===m.p&&t.x>=m.x-5&&t.x<=m.x+m.w+2&&t.y>=m.y-7&&t.y<=m.y+m.h+3&&labOK(it,t)); // etiqueta dentro del recuadro, con margen
 const labNear=(it,m,mine)=>!!keyOf(it.t)&&mine.some(t=>t.k==='t'&&t.p===m.p&&t.x>=m.x-6&&t.x<=m.x+Math.max(m.w,12)&&t.y>=m.y-7&&t.y<=m.y+7&&labOK(it,t)); // etiqueta de frase junto a su corchete // etiqueta (Bar 1, Ampliación…) dentro del recuadro
+// corrección flexible: cuenta el NOMBRE colocado en cualquier punto del tramo (cualquier pentagrama del sistema),
+// sea una etiqueta suelta, el rótulo de un recuadro o el de una línea. El color, si no coincide, se avisa pero vale.
+function sysRange(it){ try{ const P=pathOf(E().n).rows.filter(r=>r.p===it.p); if(!P.length) throw 0; let r;
+    if(it.k==='k'){ r=P.filter(q=>q.y0>=it.y-5).sort((u,v)=>u.y0-v.y0)[0]||P[P.length-1]; }
+    else { const ym=it.y+(it.h||0)/2; r=P.find(q=>ym>=q.y0-1&&ym<=q.y1+1)||P.slice().sort((u,v)=>Math.abs((u.y0+u.y1)/2-ym)-Math.abs((v.y0+v.y1)/2-ym))[0]; }
+    return [Math.min(r.y0,it.y)-9,Math.max(r.y1,it.y+(it.h||0))+5]; }catch(e){ return [it.y-9,it.y+(it.h||0)+5]; } }
 function grade(sol,mine){
-  const used=new Set(), res=[]; let ok=0;
+  const items=sol.items, res=[], head=[], last={}, used=new Set(); let ok=0, total=0;
   const gr=it=>it.k!=='l'&&!it.ng&&(it.sf||(it.k==='k'&&(/^FRASE/i.test(it.t)||it.t==='')));
-  sol.items.forEach((it,i)=>{ if(!gr(it)){res[i]='';return} let best=null,bs=0,r='no';
-    mine.forEach((m,j)=>{ if(used.has(j)||m.p!==it.p||m.k!==it.k) return; let sc=0,kind='no';
-      if(it.k==='b'){const v=iou(it,m); if(v>=.35){sc=v;kind=cn(m.c)===cn(it.c)&&(!it.lk||labIn(it,m,mine))?'ok':'part'}}
-      else if(it.k==='k'){ if(Math.abs(m.x-it.x)<=5&&Math.abs(m.x+m.w-it.x-it.w)<=5&&Math.abs(m.y-it.y)<=7){sc=1-Math.abs(m.y-it.y)/10;kind=labOK(it,m)||labNear(it,m,mine)?'ok':'part'}}
-      else { const d=Math.hypot((m.x-it.x)/1.5,(m.y-it.y)*1.2); if(d<=9){sc=1-d/12;kind=labOK(it,m)?'ok':'part'}}
-      if(kind!=='no'&&(sc>bs||(sc===bs&&kind==='ok'))){best=j;bs=sc;r=kind} });
-    if(best!=null) used.add(best); if(r==='ok') ok++; res[i]=r; });
-  return {res,ok,total:sol.items.filter(gr).length};
+  items.forEach((it,i)=>{ res[i]=''; if(!gr(it)) return; const key=it.k+'|'+it.s; if(keyOf(it.t)){ head[i]=i; last[key]=i; } else { let h=last[key]; if(h==null){ const f=items.findIndex((q,k)=>k>i&&gr(q)&&q.k+'|'+q.s===key&&keyOf(q.t)); h=f>=0?f:i; } head[i]=h; } });
+  window.__sysRange=sysRange;
+  const labs=mine.map((m,j)=>({j,m,x:m.x,y:m.y})).filter(o=>String(o.m.t||'').trim());
+  items.forEach((it,i)=>{ if(head[i]!==i) return; total++;
+    const pieces=items.filter((q,k)=>head[k]===i), named=!!keyOf(it.t); let r='no', hit=null;
+    if(named){ for(const pc of pieces){ const [ya,yb]=sysRange(pc);
+        hit=labs.find(o=>!used.has(o.j)&&o.m.p===pc.p&&o.x>=pc.x-5&&o.x<=pc.x+(pc.w||0)+3&&o.y>=ya&&o.y<=yb&&labOK(it,o.m)); if(hit) break; } }
+    if(hit){ used.add(hit.j); r='ok';
+      if(it.k==='b'){ const bx=(hit.m.k==='b'?[hit.m]:[]).concat(mine.filter(m=>m.k==='b'&&pieces.some(pc=>pc.p===m.p&&iou(pc,m)>=.2))); if(bx.length&&!bx.some(m=>cn(m.c)===cn(it.c))) r='col'; } }
+    else if(!it.lk){ // sin nombre: vale un recuadro que coincida bien (IoU ≥ 0,35)
+      const bx=mine.find(m=>m.k===it.k&&it.k==='b'&&pieces.some(pc=>pc.p===m.p&&iou(pc,m)>=.35)); if(bx) r=cn(bx.c)===cn(it.c)?'ok':'col'; }
+    if(r==='ok'||r==='col') ok++; res[i]=r; });
+  return {res,ok,total};
 }
 window.__grade=grade;
 // ----- nota sobre 10: frases, semifrases y ampliaciones (bien = 1, casi = ½); la forma bar no cuenta -----
 const isBar=it=>/^bar\b/i.test(String(it.t||'').trim());
-function nota10(items,res){ let n=0,p=0; items.forEach((it,i)=>{ const r=res[i]; if(!r||isBar(it)) return; n++; p+=r==='ok'?1:r==='part'?.5:0; }); return n?Math.round(p/n*100)/10:0; }
+function nota10(items,res){ let n=0,p=0; items.forEach((it,i)=>{ const r=res[i]; if(!r||isBar(it)) return; n++; p+=r==='ok'||r==='col'?1:r==='part'?.5:0; }); return n?Math.round(p/n*100)/10:0; }
 const fmt=v=>(Math.round(v*10)/10).toLocaleString('es-ES',{minimumFractionDigits:1,maximumFractionDigits:1});
 function correct(sol){
   if(+sol.n!==E().n) return;
   const items=(Array.isArray(sol.items)?sol.items:[]).slice(0,80).map(it=>({s:+it.s||0,p:(+it.p)|0,k:it.k==='b'||it.k==='k'||it.k==='l'?it.k:'t',x:+it.x||0,y:+it.y||0,w:+it.w||0,h:+it.h||0,t:String(it.t||'').slice(0,80),c:String(it.c||'').slice(0,3),ng:it.ng?1:0,sf:it.sf?1:0,lk:it.lk?1:0}));
-  const g=grade({items},ANN[sol.n]||[]); g.nota=nota10(items,g.res); if(window.__reveal&&L.role!=='student') __reveal(sol.n); st.fb={n:sol.n,items,res:g.res}; st.compare=true; st.sel=null; L.score=g; render(); studentBar();
+  const g=grade({items},ANN[sol.n]||[]); g.nota=nota10(items,g.res); if(window.__reveal&&L.role!=='student') __reveal(sol.n); st.fb={n:sol.n,items,res:g.res}; st.compare=L.role!=='student'; g.col=g.res.filter(r=>r==='col').length; st.sel=null; L.score=g; render(); studentBar();
   if(L.role==='student'){ L.n1=g.nota; pub(T().stu,{t:'score',from:L.myId,name:L.name,n:sol.n,id:sol.id,ok:g.ok,total:g.total,nota:g.nota}); }
-  toast('Nota de la estructura: '+fmt(g.nota)+' / 10');
+  toast('Nota de la estructura: '+fmt(g.nota)+' / 10'); if(g.col) toast('🎨 '+g.col+(g.col>1?' elementos tienen':' elemento tiene')+' el color cambiado: cuenta como bien, pero revísalo');
 }
 // ----- descripción del periodo -----
 const DQ=[['Binario','Ternario'],['Paralelo','Contrastante'],['Simétrico','Asimétrico'],['Abierto','Cerrado']];
@@ -1168,10 +1181,10 @@ window.__showRank=showRank;
 // fases de cada periodo: listen (escuchan) → draw (colorean y envían) → fixed (corregido) → show (todos siguen la partitura del profe) → desc (descripción) → descfix (notas y ranking)
 L.ph='listen'; L.hist={}; L.descSol=null;
 function hostPublish(){ const e=E();
-  pub(T().host,{t:'state',n:e.n,ph:L.ph,sol:L.ph==='fixed'?L.sol:null,step:st.step,hide:!!st.hide,desc:L.ph==='descfix'?L.descSol:null,rank:L.rankPub||[],tl:TLX,at:Date.now()},true); }
+  pub(T().host,{t:'state',n:e.n,ph:L.ph,sol:L.ph==='fixed'?L.sol:null,step:st.step,hide:!!st.hide,play:(typeof au!=='undefined'&&au)?{t:+(+au.currentTime||0).toFixed(2),on:!au.paused}:null,desc:L.ph==='descfix'?L.descSol:null,rank:L.rankPub||[],tl:TLX,at:Date.now()},true); }
 window.__hostPublish=hostPublish;
 let lastSync='';
-window.__hostSync=()=>{ if(L.role!=='host') return; const k=[E().n,st.step,st.hide,L.ph].join('|'); if(k!==lastSync){ lastSync=k; hostPublish(); } };
+window.__hostSync=()=>{ if(L.role!=='host') return; const k=[E().n,st.step,st.hide,L.ph,(typeof au!=='undefined'&&au)?au.paused:1].join('|'); if(k!==lastSync){ lastSync=k; hostPublish(); } };
 function setPh(ph){ L.ph=ph; window.__lph=ph; window.__viewSub=null; hostPublish(); hostBar(); render(); }
 function buildRank(){ const n=E().n; L.rankPub=[...L.people.entries()].map(([id,p])=>{ const h=L.hist[id]||(L.hist[id]={name:p.name,notes:{}}); h.name=p.name; if(p.fin!=null) h.notes[n]=p.fin;
     const vs=Object.values(h.notes); return {id,name:p.name,n1:p.n1,n2:p.n2,fin:p.fin,avg:vs.length?vs.reduce((a,b)=>a+b,0)/vs.length:0,np:vs.length}; }); L.rank=L.rankPub; }
@@ -1181,7 +1194,7 @@ function hostBar(){
   const B=(id,txt,cls,dis)=>`<button class="btn ${cls||''}" id="${id}" type="button" ${dis?'disabled':''}>${txt}</button>`;
   const act={listen:B('lv-perm','🔓 Dejar colorear','primary'),
     draw:`<span class="lvst">📤 ${sent}/${n} enviados</span>`+B('lv-fix','✅ Corregir','primary'),
-    fixed:B('lv-show2','🧹 Limpiar y mostrar el análisis','primary'),
+    fixed:B('lv-show2','🧹 Limpiar','primary'),
     show:B('lv-ask','❓ Preguntar la descripción','primary'),
     desc:`<span class="lvst">📤 ${dsent}/${n} respuestas</span>`+B('lv-dview','Ver respuestas')+B('lv-dfix','✅ Corregir descripción','primary'),
     descfix:B('lv-next','⏭ Limpiar y siguiente periodo','primary')}[L.ph]||'';
@@ -1194,8 +1207,8 @@ function hostBar(){
   $l('lv-count').textContent=n?`${n} conectado${n===1?'':'s'}`:'Esperando conexiones…';
   const on=(id,f)=>{const e=$l(id);if(e)e.onclick=f};
   on('lv-perm',()=>setPh('draw')); on('lv-fix',fixNow);
-  on('lv-show2',()=>{ st.hide=false; st.step=E().steps.length; setPh('show'); });
-  on('lv-ask',()=>{ L.descSol=descDef(E().n); ppl.forEach(([,p])=>delete p.desc); setPh('desc'); descPanel(); });
+  on('lv-show2',()=>{ st.hide=false; st.step=0; setPh('show'); toast('Pantallas limpias: reproduce y el alumnado lo seguirá contigo'); });
+  on('lv-ask',()=>{ st.hide=true; st.step=0; L.descSol=descDef(E().n); ppl.forEach(([,p])=>delete p.desc); setPh('desc'); descPanel(); });
   on('lv-dview',descPanel); on('lv-dfix',descFix);
   on('lv-next',()=>{ closeMod('dqm'); const i=Math.min(EX.length-1,st.ex+1); if(i===st.ex) toast('Era el último periodo'); go(i); });
   on('lv-rank',()=>{ buildRank(); showRank(); }); on('lv-show',openM); on('lv-stop',endAll);
@@ -1210,7 +1223,7 @@ function descPanel(){ const e=E(), ppl=[...L.people.values()], sol=L.descSol||(L
     <table class="rk"><thead><tr><th>Nombre</th><th>Respuesta</th></tr></thead><tbody>${ppl.map(p=>`<tr><td>${esc(p.name)}</td><td>${p.desc?descTxt(p.desc):'<i>sin responder</i>'}</td></tr>`).join('')||'<tr><td colspan=2>Nadie conectado</td></tr>'}</tbody></table>
     ${L.ph==='desc'?'<button class="btn primary" id="dq-fix" type="button">✅ Corregir descripción</button>':''}`);
   descForm($l('dqsol'),sol,()=>{},L.ph!=='desc'); $l('dq-x').onclick=()=>closeMod('dqm'); const f=$l('dq-fix'); if(f) f.onclick=descFix; }
-function descFix(){ L.descSol=L.descSol||descDef(E().n); closeMod('dqm'); setPh('descfix'); toast('Descripción corregida'); }
+function descFix(){ L.descSol=L.descSol||descDef(E().n); closeMod('dqm'); st.hide=false; st.step=E().steps.length; setPh('descfix'); toast('Descripción corregida'); }
 // dirección pública de la página (GitHub Pages). Si cambias el nombre del archivo o del repositorio, cámbiala aquí.
 const PAGE_URL='https://mgarper686.github.io/Scarlatti/periodos-clasicos.html';
 function joinURL(){ const web=/^https?:$/.test(location.protocol)&&!/^(localhost|127\.|claude\.ai|.*\.claude\.ai)$/.test(location.hostname); return (web?location.origin+location.pathname:PAGE_URL)+'?clase='+L.code; }
@@ -1237,7 +1250,7 @@ function hostStart(){
     hook(cli);
     BROKERS.forEach((B,j)=>{ if(j===idx) return; try{ const c=mqtt.connect(B.url,{clientId:L.myId+'-x'+j,clean:true,connectTimeout:8000,reconnectPeriod:3000,keepalive:30,username:B.username,password:B.password}); c.on('error',()=>{}); L.extra.push(c);
       c.once('connect',()=>{ hostPublish(); }); hook(c); }catch(e){} });
-    clearInterval(L.hb); L.hb=setInterval(()=>{ if(L.role==='host') hostPublish(); },5000);
+    clearInterval(L.hb); let hbk=0; L.hb=setInterval(()=>{ if(L.role!=='host') return; hbk++; const playing=typeof au!=='undefined'&&au&&!au.paused; if(playing||hbk%5===0) hostPublish(); if(window.__hostSync) __hostSync(); },1000);
     $l('lv-start').hidden=true;$l('lv-hostview').hidden=false;$l('lv-codebig').textContent=L.code;msg('');showQR();
     clearInterval(L.beat);L.beat=setInterval(()=>{const t=Date.now();[...L.people].forEach(([id,p])=>{if(t-p.seen>70000)L.people.delete(id)});hostBar()},15000);
     hostPublish();hostBar();
@@ -1250,15 +1263,15 @@ function studentBar(){
   const inClass=L.role==='student', fb=st.fb&&st.fb.n===E().n, s=L.score;
   if(inClass){ const ph=L.hph||'listen';
     const mid={listen:'🎧 Escucha el periodo. Cuando el profe te dé permiso podrás colorear.',draw:L.sent?'📤 Enviado. Espera a que el profe corrija.':'✏️ Marca frases, semifrases, forma bar y ampliaciones. Cuando acabes, pulsa «Enviar».',
-      fixed:s?`Nota de la estructura: <b>${fmt(s.nota||0)} / 10</b> · ✓ bien · ~ casi · ✗ falta`:'Corrigiendo…',show:'👀 Sigue el análisis en la pantalla del profe.',desc:L.dsent?'📤 Descripción enviada. Espera la corrección.':'❓ Responde la descripción del periodo.',
+      fixed:s?`Nota de la estructura: <b>${fmt(s.nota||0)} / 10</b> (${s.ok} de ${s.total})${s.col?` · 🎨 ${s.col} con el color cambiado (vale)`:''}`:'Corrigiendo…',show:'👀 Sigue el análisis en la pantalla del profe.',desc:L.dsent?'📤 Descripción enviada. Espera la corrección.':'❓ Responde la descripción del periodo.',
       descfix:L.fin!=null?`Estructura ${fmt(L.n1||0)} · Descripción ${fmt(L.n2||0)} · <b>Nota final ${fmt(L.fin)}</b>`:''}[ph]||'';
     const lost=L.lastSeen&&Date.now()-L.lastSeen>16000;
     b.innerHTML=`<span class="lvdot${lost?' lost':''}"></span><b>Clase ${L.code}</b><span id="lvme"></span><span class="lvmid" style="flex:1">${lost?'⚠️ Sin señal del profe: reconectando… ':''}${mid}</span>`+
       '<button class="btn" id="sb-sync" type="button" title="Volver a pedir el estado de la clase">🔄</button>'+
-      (ph==='draw'&&!L.sent?'<button class="btn primary" id="sb-send" type="button">📤 Enviar</button>':'')+(ph==='desc'&&!L.dsent?'<button class="btn primary" id="sb-desc" type="button">❓ Responder</button>':'')+'<button class="btn" id="sb-rank" type="button">🏆 Ranking</button>';
+      (ph==='draw'&&!L.sent?'<button class="btn primary" id="sb-send" type="button">📤 Enviar</button>':'')+(ph==='desc'&&!L.dsent?'<button class="btn primary" id="sb-desc" type="button">❓ Responder</button>':'')+((ph==='show'||ph==='descfix')?'<button class="btn" id="sb-pdf" type="button">⬇ PDF</button><button class="btn" id="sb-jpg" type="button">⬇ JPG</button>':'')+'<button class="btn" id="sb-rank" type="button">🏆 Ranking</button>';
     $l('lvme').textContent=L.name; const on=(id,f)=>{const e=$l(id);if(e)e.onclick=f};
-    on('sb-send',sendMine); on('sb-desc',askDesc); on('sb-sync',()=>window.__resync&&__resync()); on('sb-rank',showRank); return; }
-  const mid=fb?(st.fb.clean?'Aquí tienes la solución. Puedes exportarla o pulsar «Reintentar».':(s?`Nota de la estructura: <b>${fmt(s.nota||0)} / 10</b> · ✓ bien · ~ casi (revisa color o nombre) · ✗ falta`:'')):'Práctica libre: coloca lo que creas y pulsa «Corregir».';
+    on('sb-send',sendMine); on('sb-desc',askDesc); on('sb-sync',()=>window.__resync&&__resync()); on('sb-pdf',()=>exportFile('pdf')); on('sb-jpg',()=>exportFile('jpg')); on('sb-rank',showRank); return; }
+  const mid=fb?(st.fb.clean?'Aquí tienes la solución. Puedes exportarla o pulsar «Reintentar».':(s?`Nota de la estructura: <b>${fmt(s.nota||0)} / 10</b> · ✓ bien (con borde naranja: color cambiado, vale) · ~ casi · ✗ falta`:'')):'Práctica libre: coloca lo que creas y pulsa «Corregir».';
   b.innerHTML=`<span class="lvdot"></span><b>Práctica libre</b><span id="lvme"></span><span class="lvmid" style="flex:1">${mid}</span>`+
     (fb?`<button class="btn" id="sb-clean" type="button" title="Deja la solución y borra lo tuyo">Limpiar</button><button class="btn" id="sb-all" type="button" title="Borra todo y deja la partitura en blanco">Limpiar todo</button><button class="btn" id="sb-jpg" type="button">⬇ JPG</button><button class="btn" id="sb-pdf" type="button">⬇ PDF</button><button class="btn" id="sb-retry" type="button">Reintentar</button>`:`<button class="btn primary" id="sb-fix" type="button">Corregir</button>`);
   $l('lvme').textContent=L.name;
@@ -1288,7 +1301,8 @@ async function renderPage(p){
   const S=W/900, fs=14*S, ff=getComputedStyle(document.body).fontFamily||'sans-serif', X=v=>v/100*W, Y=v=>head+v/100*H, fbOn=st.fb&&st.fb.n===e.n, clean=fbOn&&st.fb.clean;
   const rr=(x,y,w,h,r)=>{g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath()};
   const lab=(t,x,y,size,col,wt,o)=>{ g.font=`${wt} ${size}px ${ff}`; const w=g.measureText(t).width+8*S, h=size*1.15+2*S; let lx=x,ly=y; if(o&&o.right)lx=x-w; if(o&&o.bottom)ly=y-h; g.fillStyle='rgba(255,255,255,.86)'; rr(lx,ly,w,h,3*S); g.fill(); g.fillStyle=col; g.textBaseline='middle'; g.fillText(t,lx+4*S,ly+h/2); };
-  const layers=[[fbOn?cmpItems().filter(it=>it.p===p&&it.k!=='l'):[],clean?1:.42],[solItems().filter(it=>it.p===p&&it.k==='l'),1],[annOf().filter(it=>it.p===p),1]];
+  const solAll=L.role==='student'&&['show','descfix'].includes(L.hph); // el alumnado exporta el análisis del profe
+  const layers=[[solAll?solItems().filter(it=>it.p===p&&it.k!=='l'&&it.s<=Math.max(st.watch||0,L.hph==='descfix'?99:0)):fbOn?cmpItems().filter(it=>it.p===p&&it.k!=='l'):[],solAll||clean?1:.42],[solItems().filter(it=>it.p===p&&it.k==='l'),1],[annOf().filter(it=>it.p===p),1]];
   layers.forEach(([arr,al])=>arr.forEach(it=>{ if(it.k!=='b') return; const col=COL[it.c]||COL.Y; g.globalAlpha=al; g.fillStyle=hexA(col,.38); g.strokeStyle=col; g.lineWidth=1.5*S; rr(X(it.x),Y(it.y),X(it.w),it.h/100*H,3*S); g.fill(); g.stroke(); }));
   layers.forEach(([arr,al])=>arr.forEach(it=>{ g.globalAlpha=al;
     if(it.k==='b'){ const kb=it.lb?null:brAbove(it); if(it.t) lab(it.t,it.x>78?X(it.x+it.w-.3):X(it.x+.3),it.lb?Y(it.y+it.h)-(fs*.88*1.15+2*S)-2*S:kb?Y(kb.y)+fs*1.6:Y(it.y+.4),fs*.88,'#1d1d1d',700,{right:it.x>78}); }
@@ -1297,9 +1311,9 @@ async function renderPage(p){
     else if(it.k==='l'){ g.fillStyle=TXT[it.c]||'#1d1d1d'; g.fillRect(X(it.x)-1.5*S,Y(it.y),3*S,it.h/100*H); }
     else lab(it.t,X(it.x),Y(it.y),fs,TXT[it.c]||TXT.navy,800); }));
   g.globalAlpha=1;
-  if(fbOn&&!clean) st.fb.items.forEach((it,i)=>{ if(it.p!==p) return; const r=st.fb.res[i]; if(!r) return; g.fillStyle=r==='ok'?'#13803A':r==='part'?'#C97800':'#C4161C'; g.strokeStyle='#fff'; g.lineWidth=2*S; g.beginPath(); g.arc(X(it.x),Y(it.y),9*S,0,7); g.fill(); g.stroke(); g.fillStyle='#fff'; g.font=`800 ${12*S}px sans-serif`; g.textAlign='center'; g.textBaseline='middle'; g.fillText(r==='ok'?'✓':r==='part'?'~':'✗',X(it.x),Y(it.y)+S); g.textAlign='left'; });
-  if(head){ g.fillStyle='#f3efe6'; g.fillRect(0,0,W,head); g.fillStyle='#1d1d1d'; g.textBaseline='middle'; g.font=`800 ${W*.024}px ${ff}`; g.fillText(`Periodo ${e.n} · ${e.comp} — ${e.obra}`,W*.02,head*.36,W*.96);
-    g.font=`600 ${W*.017}px ${ff}`; const sc=L.score; g.fillText((L.name?`Alumno/a: ${L.name} · `:'')+(clean?'Solución del profesor':(fbOn&&sc?`Corrección: ${sc.ok} de ${sc.total} bien (✓ bien · ~ casi · ✗ falta)`:'Sin corregir')),W*.02,head*.74,W*.96); }
+  if(fbOn&&!clean) st.fb.items.forEach((it,i)=>{ if(it.p!==p) return; const r=st.fb.res[i]; if(!r) return; g.fillStyle=r==='ok'||r==='col'?'#13803A':r==='part'?'#C97800':'#C4161C'; g.strokeStyle='#fff'; g.lineWidth=2*S; g.beginPath(); g.arc(X(it.x),Y(it.y),9*S,0,7); g.fill(); g.stroke(); g.fillStyle='#fff'; g.font=`800 ${12*S}px sans-serif`; g.textAlign='center'; g.textBaseline='middle'; g.fillText(r==='ok'||r==='col'?'✓':r==='part'?'~':'✗',X(it.x),Y(it.y)+S); g.textAlign='left'; });
+  if(head){ g.fillStyle='#f3efe6'; g.fillRect(0,0,W,head); g.fillStyle='#1d1d1d'; g.textBaseline='middle'; g.font=`800 ${W*.024}px ${ff}`; g.fillText(solAll&&!REVEAL.has(e.n)?`${$('#exT').textContent}`:`Periodo ${e.n} · ${e.comp} — ${e.obra}`,W*.02,head*.36,W*.96);
+    g.font=`600 ${W*.017}px ${ff}`; const sc=L.score; g.fillText((L.name?`Alumno/a: ${L.name} · `:'')+(solAll?'Análisis del periodo':clean?'Solución del profesor':(fbOn&&sc?`Corrección: ${sc.ok} de ${sc.total} bien (✓ bien · ~ casi · ✗ falta)`:'Sin corregir')),W*.02,head*.74,W*.96); }
   return c;
 }
 const dl=(blob,name)=>{const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},4000)};
@@ -1316,7 +1330,7 @@ function buildPDF(pages){
   put(x+`trailer\n<< /Size ${total+1} /Root 1 0 R >>\nstartxref\n${xr}\n%%EOF`); return new Blob(parts,{type:'application/pdf'});
 }
 async function exportFile(kind){
-  try{ const e=E(), clean=st.fb&&st.fb.clean, base=`periodo-${String(e.n).padStart(2,'0')}-${clean?'solucion':'corregido'}`, cs=[]; for(let p=0;p<e.img.length;p++) cs.push(await renderPage(p));
+  try{ const e=E(), clean=st.fb&&st.fb.clean, base=`periodo-${String(e.n).padStart(2,'0')}-${L.role==='student'&&['show','descfix'].includes(L.hph)?'analisis':clean?'solucion':'corregido'}`, cs=[]; for(let p=0;p<e.img.length;p++) cs.push(await renderPage(p));
     if(kind==='jpg'){ let c=cs[0]; if(cs.length>1){ const W=Math.max(...cs.map(x=>x.width)), H=cs.reduce((a,x)=>a+x.height,0); c=document.createElement('canvas'); c.width=W; c.height=H; const g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,W,H); let y=0; cs.forEach(x=>{g.drawImage(x,0,y);y+=x.height}); }
       dl(new Blob([jpgBytes(c)],{type:'image/jpeg'}),base+'.jpg'); }
     else dl(buildPDF(cs.map(c=>({u8:jpgBytes(c),w:c.width,h:c.height}))),base+'.pdf');
@@ -1332,9 +1346,10 @@ function onState(m){
   if(ph==='fixed'&&m.sol&&m.sol.id!==L.seenSol){ L.seenSol=m.sol.id; lockState(); correct(m.sol); }
   if(ph==='show'||ph==='desc'||ph==='descfix'){ // pantallas limpias: se ve la partitura del profe con sus colores
     if(prev==='fixed'||prev==='draw'||prev==='listen'||!prev){ st.fb=null; st.compare=false; ANN[n]=[]; saveAnn(); }
-    st.watch=m.hide?0:Math.max(0,+m.step||0); watchFresh=false; }
-  else st.watch=0;
-  lockState(); render();
+    st.watch=m.hide?0:Math.max(0,+m.step||0); watchFresh=false;
+    L.play=(m.play&&!m.hide)?{t:+m.play.t||0,on:!!m.play.on,at:Date.now()}:null; }
+  else { st.watch=0; L.play=null; }
+  lockState(); render(); followPlay();
   if(ph==='desc'&&!L.dsent&&prev!=='desc') askDesc();
   if(ph==='descfix'&&Array.isArray(m.desc)&&!L.finShown){ L.finShown=true; if(window.__reveal) __reveal(n); closeMod('dqs'); const a=L.dval||[], ok=m.desc.filter((v,k)=>a[k]===v).length;
     L.n2=ok*2.5; if(L.n1==null) L.n1=L.score?L.score.nota||0:0; L.fin=Math.round((L.n1+L.n2)/2*10)/10;
@@ -1344,6 +1359,9 @@ function onState(m){
     $l('fn-x').onclick=()=>closeMod('fnm'); $l('fn-rk').onclick=()=>{closeMod('fnm');showRank()}; }
   studentBar();
 }
+// el alumnado ve rellenarse los recuadros al ritmo del audio del profe
+function followPlay(){ cancelAnimationFrame(L.praf); const P=L.play; if(!P||!window.__wipeAt){ if(window.__wipeAt) __wipeAt(null); return; }
+  const loop=()=>{ const q=L.play; if(!q) return; const t=q.on?q.t+(Date.now()-q.at)/1000:q.t; __wipeAt(t>0.05?t:null); if(q.on) L.praf=requestAnimationFrame(loop); }; loop(); }
 function join(code,name,fail,ok){
   if(window.__stopAv) __stopAv();
   name=(name||'Alumno/a').slice(0,20);
