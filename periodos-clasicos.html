@@ -1130,20 +1130,25 @@ function sysRange(it){ try{ const P=pathOf(E().n).rows.filter(r=>r.p===it.p); if
     if(it.k==='k'){ r=P.filter(q=>q.y0>=it.y-5).sort((u,v)=>u.y0-v.y0)[0]||P[P.length-1]; }
     else { const ym=it.y+(it.h||0)/2; r=P.find(q=>ym>=q.y0-1&&ym<=q.y1+1)||P.slice().sort((u,v)=>Math.abs((u.y0+u.y1)/2-ym)-Math.abs((v.y0+v.y1)/2-ym))[0]; }
     return [Math.min(r.y0,it.y)-9,Math.max(r.y1,it.y+(it.h||0))+5]; }catch(e){ return [it.y-9,it.y+(it.h||0)+5]; } }
+function nearSys(p,y){ try{ const P=pathOf(E().n).rows.filter(r=>r.p===p); let bi=-1,bd=1e9; P.forEach((r,k)=>{ const d=y<r.y0?r.y0-y:y>r.y1?y-r.y1:0; if(d<bd){bd=d;bi=k} }); return bi; }catch(e){ return 0; } } // sistema más cercano en vertical
 function grade(sol,mine){
   const items=sol.items, res=[], head=[], last={}, used=new Set(); let ok=0, total=0;
   const gr=it=>it.k!=='l'&&!it.ng&&(it.sf||(it.k==='k'&&(/^FRASE/i.test(it.t)||it.t==='')));
   items.forEach((it,i)=>{ res[i]=''; if(!gr(it)) return; const key=it.k+'|'+it.s; if(keyOf(it.t)){ head[i]=i; last[key]=i; } else { let h=last[key]; if(h==null){ const f=items.findIndex((q,k)=>k>i&&gr(q)&&q.k+'|'+q.s===key&&keyOf(q.t)); h=f>=0?f:i; } head[i]=h; } });
   window.__sysRange=sysRange;
   const labs=mine.map((m,j)=>({j,m,x:m.x,y:m.y})).filter(o=>String(o.m.t||'').trim());
+  // emparejar cada nombre con el elemento más cercano en vertical cuyo tramo (± margen de un compás aprox.) lo contenga en horizontal
+  const HM=7, cand=[];
+  items.forEach((it,i)=>{ if(head[i]!==i||!keyOf(it.t)) return; const pieces=items.filter((q,k)=>head[k]===i);
+    labs.forEach(o=>{ if(!labOK(it,o.m)) return; let best=1e9; pieces.forEach(pc=>{ if(pc.p!==o.m.p) return; if(o.x<pc.x-HM||o.x>pc.x+(pc.w||0)+HM/2) return; const [ya,yb]=sysRange(pc); const d=o.y<ya?ya-o.y:o.y>yb?o.y-yb:0; if(d>3&&nearSys(o.m.p,o.y)!==nearSys(pc.p,(ya+yb)/2)) return; if(d<best) best=d; });
+      if(best<1e9) cand.push({i,j:o.j,d:best}); }); });
+  cand.sort((u,v)=>u.d-v.d); const hitOf={};
+  cand.forEach(c=>{ if(hitOf[c.i]!=null||used.has(c.j)) return; hitOf[c.i]=c.j; used.add(c.j); });
   items.forEach((it,i)=>{ if(head[i]!==i) return; total++;
-    const pieces=items.filter((q,k)=>head[k]===i), named=!!keyOf(it.t); let r='no', hit=null;
-    if(named){ for(const pc of pieces){ const [ya,yb]=sysRange(pc);
-        hit=labs.find(o=>!used.has(o.j)&&o.m.p===pc.p&&o.x>=pc.x-5&&o.x<=pc.x+(pc.w||0)+3&&o.y>=ya&&o.y<=yb&&labOK(it,o.m)); if(hit) break; } }
-    if(hit){ used.add(hit.j); r='ok';
-      if(it.k==='b'){ const bx=(hit.m.k==='b'?[hit.m]:[]).concat(mine.filter(m=>m.k==='b'&&pieces.some(pc=>pc.p===m.p&&iou(pc,m)>=.2))); if(bx.length&&!bx.some(m=>cn(m.c)===cn(it.c))) r='col'; } }
-    else if(!it.lk){ // sin nombre: vale un recuadro que coincida bien (IoU ≥ 0,35)
-      const bx=mine.find(m=>m.k===it.k&&it.k==='b'&&pieces.some(pc=>pc.p===m.p&&iou(pc,m)>=.35)); if(bx) r=cn(bx.c)===cn(it.c)?'ok':'col'; }
+    const pieces=items.filter((q,k)=>head[k]===i); let r='no'; const hj=hitOf[i];
+    if(hj!=null){ const hm=mine[hj]; r='ok';
+      if(it.k==='b'){ const bx=(hm.k==='b'?[hm]:[]).concat(mine.filter(m=>m.k==='b'&&pieces.some(pc=>pc.p===m.p&&iou(pc,m)>=.2))); if(bx.length&&!bx.some(m=>cn(m.c)===cn(it.c))) r='col'; } }
+    else if(!it.lk&&it.k==='b'){ const bx=mine.find(m=>m.k==='b'&&pieces.some(pc=>pc.p===m.p&&iou(pc,m)>=.35)); if(bx) r=cn(bx.c)===cn(it.c)?'ok':'col'; }
     if(r==='ok'||r==='col') ok++; res[i]=r; });
   return {res,ok,total};
 }
@@ -1208,7 +1213,7 @@ function hostBar(){
   const on=(id,f)=>{const e=$l(id);if(e)e.onclick=f};
   on('lv-perm',()=>setPh('draw')); on('lv-fix',fixNow);
   on('lv-show2',()=>{ st.hide=false; st.step=0; setPh('show'); toast('Pantallas limpias: reproduce y el alumnado lo seguirá contigo'); });
-  on('lv-ask',()=>{ st.hide=true; st.step=0; L.descSol=descDef(E().n); ppl.forEach(([,p])=>delete p.desc); setPh('desc'); descPanel(); });
+  on('lv-ask',()=>{ L.dqShowA=false; L.dqShowS=false; st.hide=true; st.step=0; L.descSol=descDef(E().n); ppl.forEach(([,p])=>delete p.desc); setPh('desc'); toast('Pregunta enviada al alumnado'); });
   on('lv-dview',descPanel); on('lv-dfix',descFix);
   on('lv-next',()=>{ closeMod('dqm'); const i=Math.min(EX.length-1,st.ex+1); if(i===st.ex) toast('Era el último periodo'); go(i); });
   on('lv-rank',()=>{ buildRank(); showRank(); }); on('lv-show',openM); on('lv-stop',endAll);
@@ -1217,12 +1222,18 @@ function fixNow(){ // la solución completa del periodo
   const items=solItems().map(it=>({s:it.s,p:it.p,k:it.k,x:it.x,y:it.y,w:it.w,h:it.h,t:it.t,c:it.c,ng:it.ng?1:0,sf:it.sf||0,lk:it.lk?1:0}));
   L.sol={id:Date.now(),n:E().n,items}; L.people.forEach(p=>{delete p.n1;delete p.n2;delete p.fin}); setPh('fixed'); toast('Corrección enviada: a cada alumno/a se le corrige lo suyo');
 }
-function descPanel(){ const e=E(), ppl=[...L.people.values()], sol=L.descSol||(L.descSol=descDef(e.n));
-  const m=modal('dqm',`<div class="row" style="justify-content:space-between"><h2 style="margin:0;font-family:var(--display)">Descripción del periodo ${e.n}</h2><button class="btn" id="dq-x" type="button">Cerrar ✕</button></div>
-    <p class="hint" style="margin:0">Respuesta correcta (puedes cambiarla antes de corregir):</p><div id="dqsol" class="dqf"></div>
-    <table class="rk"><thead><tr><th>Nombre</th><th>Respuesta</th></tr></thead><tbody>${ppl.map(p=>`<tr><td>${esc(p.name)}</td><td>${p.desc?descTxt(p.desc):'<i>sin responder</i>'}</td></tr>`).join('')||'<tr><td colspan=2>Nadie conectado</td></tr>'}</tbody></table>
+function descPanel(){ const e=E(), ppl=[...L.people.values()], sol=L.descSol||(L.descSol=descDef(e.n)), n=ppl.filter(p=>p.desc).length;
+  // en el proyector no se ve nada hasta que el profe lo pide: ni la respuesta correcta ni las del alumnado
+  const showA=!!L.dqShowA, showS=!!L.dqShowS;
+  modal('dqm',`<div class="row" style="justify-content:space-between"><h2 style="margin:0;font-family:var(--display)">Descripción del periodo</h2><button class="btn" id="dq-x" type="button">Cerrar ✕</button></div>
+    <p style="margin:0">Han respondido <b>${n}</b> de ${ppl.length}.</p>
+    <div class="row"><button class="btn" id="dq-sa" type="button" aria-pressed="${showA}">${showA?'🙈 Ocultar respuestas':'👁 Ver respuestas del alumnado'}</button><button class="btn" id="dq-ss" type="button" aria-pressed="${showS}">${showS?'🙈 Ocultar la correcta':'👁 Ver / cambiar la respuesta correcta'}</button></div>
+    ${showS?'<div id="dqsol" class="dqf"></div>':''}
+    ${showA?`<table class="rk"><thead><tr><th>Nombre</th><th>Respuesta</th></tr></thead><tbody>${ppl.map(p=>`<tr><td>${esc(p.name)}</td><td>${p.desc?descTxt(p.desc):'<i>sin responder</i>'}</td></tr>`).join('')||'<tr><td colspan=2>Nadie conectado</td></tr>'}</tbody></table>`:''}
     ${L.ph==='desc'?'<button class="btn primary" id="dq-fix" type="button">✅ Corregir descripción</button>':''}`);
-  descForm($l('dqsol'),sol,()=>{},L.ph!=='desc'); $l('dq-x').onclick=()=>closeMod('dqm'); const f=$l('dq-fix'); if(f) f.onclick=descFix; }
+  if(showS) descForm($l('dqsol'),sol,()=>{},L.ph!=='desc');
+  $l('dq-x').onclick=()=>closeMod('dqm'); $l('dq-sa').onclick=()=>{L.dqShowA=!showA;descPanel()}; $l('dq-ss').onclick=()=>{L.dqShowS=!showS;descPanel()};
+  const f=$l('dq-fix'); if(f) f.onclick=descFix; }
 function descFix(){ L.descSol=L.descSol||descDef(E().n); closeMod('dqm'); st.hide=false; st.step=E().steps.length; setPh('descfix'); toast('Descripción corregida'); }
 // dirección pública de la página (GitHub Pages). Si cambias el nombre del archivo o del repositorio, cámbiala aquí.
 const PAGE_URL='https://mgarper686.github.io/Scarlatti/periodos-clasicos.html';
