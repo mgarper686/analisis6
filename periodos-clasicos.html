@@ -85,6 +85,17 @@ body.drawlock .stage.edit{touch-action:none!important}
 <style id="r8-css">#bFix[aria-pressed=true]{background:#13803A;color:#fff;border-color:#13803A}body.drawlock{overflow:hidden;overscroll-behavior:none}body.drawlock .stage.edit .scroll,body.drawlock .scroll{overflow:hidden}</style>
 <style>.lvdot.lost{background:#e08a00!important}</style>
 <style>.fb.col{background:#13803A;box-shadow:0 0 0 3px #F29A00}</style>
+<style>
+.dqopt.sel{background:var(--ink);color:var(--bg)}
+.dqopt.good{background:#13803A;color:#fff;border-color:#13803A}
+.dqopt.bad{background:#fde8e8;color:#C4161C;border-color:#C4161C;text-decoration:line-through;text-decoration-thickness:2px}
+.dqopt.right{border:2px solid #13803A;color:#13803A}
+.dqm{font-weight:800;text-decoration:none;display:inline-block;margin-left:auto}
+.dqm.no{color:#C4161C}.dqopt.good .dqm{color:#fff}
+.mnrev td{background:var(--bg)}
+</style>
+<style>.grpbox{display:grid;gap:6px;margin-top:8px}.grpbox select,.grpbox input,.grpbox textarea{font:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);width:100%;box-sizing:border-box}</style>
+<style>#duelm .dqopt{cursor:pointer;text-align:left;font:inherit;font-weight:700}#duelm .dqopt:disabled{opacity:.7}</style>
 </head><body>
 <title>Periodos clásicos</title>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -305,7 +316,7 @@ footer{margin-top:28px;color:var(--muted);font-size:13px;border-top:1px solid va
   <div id="lv-start" class="lvopts">
    <div class="lvopt"><h3>🧑‍🏫 Soy el profe</h3><p>Abre una clase: saldrá un código de 4 cifras. El alumnado verá el periodo que elijas y colocará frases y semifrases en el suyo. Tú pulsas <b>Corregir</b> y a cada alumno/a se le corrige.</p><button class="btn primary" id="lv-host" type="button">Abrir clase</button></div>
    </div>
-  <div id="lv-hostview" hidden><p style="margin:0">El alumnado entra en esta misma página, pulsa <b>📡 Clase en directo</b> y escribe su nombre y este código:</p><div class="lvcode" id="lv-codebig">····</div><div class="lvqr" id="lv-qr" hidden style="width:min(300px,70vw);margin:0 auto"></div><div class="hint" id="lv-url" style="text-align:center;word-break:break-all"></div><div class="hint" id="lv-count">Esperando conexiones…</div><div class="lvnames" id="lv-names"></div><div class="row"><button class="btn primary" id="lv-done" type="button">Empezar</button></div></div>
+  <div id="lv-hostview" hidden><p style="margin:0">El alumnado escanea el QR con el móvil (o entra en la dirección de abajo desde el ordenador), escribe su nombre y elige compositor. Si ya está en la página: <b>Unirme a la clase</b> y este código:</p><div class="lvcode" id="lv-codebig">····</div><div class="lvqr" id="lv-qr" hidden style="width:min(300px,70vw);margin:0 auto"></div><div class="hint" id="lv-url" style="text-align:center;word-break:break-all"></div><div class="hint" id="lv-count">Esperando conexiones…</div><div class="lvnames" id="lv-names"></div><div class="row"><button class="btn primary" id="lv-done" type="button">Empezar</button></div></div>
   <p class="hint" id="lv-msg" style="margin:0"></p></div></div>
 <div class="start" id="start" role="dialog" aria-modal="true" aria-label="Entrar en Periodos clásicos"><div class="startbox">
  <h1 style="margin:0;font-family:var(--display)">Periodos clásicos</h1><p style="margin:0">Análisis de periodos musicales.</p>
@@ -1100,7 +1111,7 @@ buildIndex(); render(); fitSoon(false);
 const $l=id=>document.getElementById(id);
 const BROKERS=[{url:'wss://public.cloud.shiftr.io',username:'public',password:'public'},{url:'wss://broker.hivemq.com:8884/mqtt'},{url:'wss://broker.emqx.io:8084/mqtt'}];
 const NS='periodosclasicos-aula/';
-const L={role:null,cli:null,code:null,name:'',myId:'u'+Math.random().toString(36).slice(2,10),people:new Map(),sol:null,exN:null,seenSol:null,score:null,beat:null};
+const L={role:null,cli:null,code:null,name:'',myId:(()=>{ try{ let v=sessionStorage.getItem('periodos-id'); if(!v){ v='u'+Math.random().toString(36).slice(2,10); sessionStorage.setItem('periodos-id',v); } return v; }catch(e){ return 'u'+Math.random().toString(36).slice(2,10); } })(),people:new Map(),sol:null,exN:null,seenSol:null,score:null,beat:null};
 const T=()=>({host:NS+L.code+'/pantalla',stu:NS+L.code+'/moviles'});
 // se publica en todos los servidores a los que se está conectado (el profe se conecta a los tres, por si alguno pierde mensajes)
 const pub=(tp,o,r)=>{ if(!o.mid) o.mid=Math.random().toString(36).slice(2,10); const txt=JSON.stringify(o); [L.cli,...(L.extra||[])].forEach(c=>{ try{ if(c&&c.connected) c.publish(tp,txt,{qos:1,retain:!!r}); }catch(e){} }); };
@@ -1175,10 +1186,13 @@ function modal(id,html){ let m=$l(id); if(!m){ m=document.createElement('div'); 
   m.innerHTML=`<div class="lvbox">${html}</div>`; m.hidden=false; return m; }
 const closeMod=id=>{ const m=$l(id); if(m) m.hidden=true; };
 // ----- ranking -----
-function rankRows(){ return (L.rank||[]).slice().sort((a,b)=>(b.fin-a.fin)||(b.avg-a.avg)); }
-function showRank(){ const rows=rankRows();
+const nkey=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,' ').trim();
+function rankRows(){ return (L.rank||[]).slice().sort((a,b)=>(b.tot-a.tot)||(b.np-a.np)||String(a.name).localeCompare(b.name)); }
+function showRank(){ const rows=rankRows(), me=nkey(L.name), pos=rows.findIndex(r=>r.key===me);
   modal('rkm',`<div class="row" style="justify-content:space-between"><h2 style="margin:0;font-family:var(--display)">🏆 Ranking</h2><button class="btn" id="rk-x" type="button">Cerrar ✕</button></div>
-   ${rows.length?`<table class="rk"><thead><tr><th>#</th><th>Nombre</th><th>Estructura</th><th>Descripción</th><th>Nota del periodo</th><th>Media de la clase (${rows[0].np||1} p.)</th></tr></thead><tbody>${rows.map((r,i)=>`<tr${r.id===L.myId?' class="me"':''}><td>${i+1}</td><td>${esc(r.name)}</td><td>${r.n1==null?'—':fmt(r.n1)}</td><td>${r.n2==null?'—':fmt(r.n2)}</td><td><b>${r.fin==null?'—':fmt(r.fin)}</b></td><td>${fmt(r.avg||0)}</td></tr>`).join('')}</tbody></table>`:'<p>Todavía no hay notas.</p>'}`);
+   ${L.role==='student'&&pos>=0?`<p style="margin:0;font-size:17px">Tu posición: <b>${pos+1}º</b> de ${rows.length} · ${fmt(rows[pos].tot)} puntos</p>`:''}
+   <p class="hint" style="margin:0">${L.group?`Grupo <b>${esc(L.group)}</b> · `:''}Se suman las notas finales de todos los periodos trabajados en clase; si alguien no estuvo, ese periodo cuenta 0.</p>
+   ${rows.length?`<div style="overflow:auto;max-height:60vh"><table class="rk"><thead><tr><th>#</th><th>Nombre</th><th>Periodos</th><th>Último periodo</th><th>Total</th></tr></thead><tbody>${rows.map((r,i)=>`<tr${r.key===me&&L.role==='student'?' class="me"':''}><td>${i+1}${i<3?[' 🥇',' 🥈',' 🥉'][i]:''}</td><td>${esc(r.name)}</td><td>${r.np}${r.nd>r.np?` <small title="periodos que no ha hecho (cuentan 0)">(${r.nd-r.np} sin hacer)</small>`:''}</td><td>${r.last==null?'—':fmt(r.last)}</td><td><b>${fmt(r.tot)}</b></td></tr>`).join('')}</tbody></table></div>`:'<p>Todavía no hay notas.</p>'}`);
   $l('rk-x').onclick=()=>closeMod('rkm'); }
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 window.__showRank=showRank;
@@ -1186,13 +1200,23 @@ window.__showRank=showRank;
 // fases de cada periodo: listen (escuchan) → draw (colorean y envían) → fixed (corregido) → show (todos siguen la partitura del profe) → desc (descripción) → descfix (notas y ranking)
 L.ph='listen'; L.hist={}; L.descSol=null;
 function hostPublish(){ const e=E();
-  pub(T().host,{t:'state',n:e.n,ph:L.ph,sol:L.ph==='fixed'?L.sol:null,step:st.step,hide:!!st.hide,play:(typeof au!=='undefined'&&au)?{t:+(+au.currentTime||0).toFixed(2),on:!au.paused}:null,desc:L.ph==='descfix'?L.descSol:null,rank:L.rankPub||[],tl:TLX,at:Date.now()},true); }
+  pub(T().host,{t:'state',n:e.n,ph:L.ph,sol:L.ph==='fixed'?L.sol:null,step:st.step,hide:!!st.hide,play:(typeof au!=='undefined'&&au)?{t:+(+au.currentTime||0).toFixed(2),on:!au.paused}:null,desc:L.ph==='descfix'?L.descSol:null,rank:L.rankPub||[],roster:L.roster||[],group:L.group||'',tl:TLX,at:Date.now()},true); }
 window.__hostPublish=hostPublish;
 let lastSync='';
 window.__hostSync=()=>{ if(L.role!=='host') return; const k=[E().n,st.step,st.hide,L.ph,(typeof au!=='undefined'&&au)?au.paused:1].join('|'); if(k!==lastSync){ lastSync=k; hostPublish(); } };
 function setPh(ph){ L.ph=ph; window.__lph=ph; window.__viewSub=null; hostPublish(); hostBar(); render(); }
-function buildRank(){ const n=E().n; L.rankPub=[...L.people.entries()].map(([id,p])=>{ const h=L.hist[id]||(L.hist[id]={name:p.name,notes:{}}); h.name=p.name; if(p.fin!=null) h.notes[n]=p.fin;
-    const vs=Object.values(h.notes); return {id,name:p.name,n1:p.n1,n2:p.n2,fin:p.fin,avg:vs.length?vs.reduce((a,b)=>a+b,0)/vs.length:0,np:vs.length}; }); L.rank=L.rankPub; }
+function buildRank(){ const n=E().n; // historial por nombre: se conserva entre periodos y entre días
+  L.people.forEach(p=>{ const k=nkey(p.name); const h=L.hist[k]||(L.hist[k]={name:p.name,notes:{}}); h.name=p.name; if(p.fin!=null) h.notes[n]=p.fin; });
+  const dn=(L.done||[]).length; L.rankPub=Object.entries(L.hist).map(([key,h])=>{ const vs=Object.values(h.notes); return {key,name:h.name,tot:Math.round(vs.reduce((a,b)=>a+b,0)*10)/10,np:vs.length,nd:Math.max(dn,vs.length),last:h.notes[n]==null?null:h.notes[n]}; });
+  L.rank=L.rankPub; saveClass(); }
+// guardar la clase para continuarla otro día
+// cada grupo guarda su propia clase (código, lista, notas, periodo) para continuar otro día
+function groups(){ let g={}; try{ g=JSON.parse(localStorage.getItem('periodos-grupos')||'{}')||{}; const old=JSON.parse(localStorage.getItem('periodos-clase')||'null'); if(old&&old.code&&!Object.keys(g).length){ g['Mi grupo']=old; localStorage.setItem('periodos-grupos',JSON.stringify(g)); } }catch(e){} return g; }
+function saveGroups(g){ try{ localStorage.setItem('periodos-grupos',JSON.stringify(g)); }catch(e){} }
+function saveClass(){ if(L.role!=='host'||!L.group) return; const g=groups(); g[L.group]=Object.assign(g[L.group]||{},{code:L.code,hist:L.hist,ex:st.ex,done:L.done||[],roster:L.roster||[],at:Date.now()}); saveGroups(g); }
+function savedClass(name){ const g=groups()[name]; return g&&g.code?g:null; }
+function rosterSeed(){ (L.roster||[]).forEach(nm=>{ const k=nkey(nm); if(!L.hist[k]) L.hist[k]={name:nm,notes:{}}; }); }
+window.__savedClass=savedClass;
 function hostBar(){
   const ppl=[...L.people.entries()], n=ppl.length, b=$l('lvbar'); b.hidden=false; document.body.classList.add('hasbar');
   const sent=ppl.filter(([,p])=>p.sub).length, dsent=ppl.filter(([,p])=>p.desc).length;
@@ -1206,7 +1230,8 @@ function hostBar(){
   b.innerHTML=`<span class="lvdot"></span><b>Clase ${L.code}</b><span>${n} conectado${n===1?'':'s'}</span><span class="lvnames" id="lvn"></span>${act}${B('lv-rank','🏆 Ranking')}${B('lv-show','📱 Código y QR')}${B('lv-stop','Cerrar clase','warn')}`;
   [$l('lvn'),$l('lv-names')].forEach(box=>{ box.innerHTML=''; ppl.forEach(([id,p])=>{ const s=document.createElement(box.id==='lvn'?'button':'span'); s.type='button';
       s.className='chipn'+(p.sub?' sc':'')+(window.__viewSub&&window.__viewSub.id===id?' on':''); s.style.cssText='display:inline-flex;align-items:center;gap:5px';
-      s.textContent=p.name+(p.fin!=null?' · '+fmt(p.fin):p.n1!=null?' · '+fmt(p.n1):p.sub?' ✉':'')+(L.ph==='desc'&&p.desc?' ✓':'');
+      const dup=ppl.filter(([,q])=>nkey(q.name)===nkey(p.name)).length>1, unk=(L.roster||[]).length&&!(L.roster||[]).some(r=>nkey(r)===nkey(p.name)); if(dup||unk){ s.style.outline='2px solid #C4161C'; s.title=dup?'Hay dos con el mismo nombre':'No está en la lista del grupo'; }
+      s.textContent=(dup||unk?'⚠ ':'')+p.name+(p.fin!=null?' · '+fmt(p.fin):p.n1!=null?' · '+fmt(p.n1):p.sub?' ✉':'')+(L.ph==='desc'&&p.desc?' ✓':'');
       if(box.id==='lvn'){ s.title=p.sub?'Ver su envío sobre tu partitura':'Aún no ha enviado'; s.onclick=()=>{ if(!p.sub) return; window.__viewSub=(window.__viewSub&&window.__viewSub.id===id)?null:{id,n:p.sub.n,items:p.sub.items,name:p.name}; if(window.__viewSub) toast('Viendo el envío de '+p.name+' (vuelve a pulsar para quitarlo)'); hostBar(); render(); }; }
       box.appendChild(s); }); });
   $l('lv-count').textContent=n?`${n} conectado${n===1?'':'s'}`:'Esperando conexiones…';
@@ -1234,7 +1259,7 @@ function descPanel(){ const e=E(), ppl=[...L.people.values()], sol=L.descSol||(L
   if(showS) descForm($l('dqsol'),sol,()=>{},L.ph!=='desc');
   $l('dq-x').onclick=()=>closeMod('dqm'); $l('dq-sa').onclick=()=>{L.dqShowA=!showA;descPanel()}; $l('dq-ss').onclick=()=>{L.dqShowS=!showS;descPanel()};
   const f=$l('dq-fix'); if(f) f.onclick=descFix; }
-function descFix(){ L.descSol=L.descSol||descDef(E().n); closeMod('dqm'); st.hide=false; st.step=E().steps.length; setPh('descfix'); toast('Descripción corregida'); }
+function descFix(){ L.descSol=L.descSol||descDef(E().n); L.done=L.done||[]; if(!L.done.includes(E().n)) L.done.push(E().n); saveClass(); closeMod('dqm'); st.hide=false; st.step=E().steps.length; setPh('descfix'); toast('Descripción corregida'); }
 // dirección pública de la página (GitHub Pages). Si cambias el nombre del archivo o del repositorio, cámbiala aquí.
 const PAGE_URL='https://mgarper686.github.io/Scarlatti/periodos-clasicos.html';
 function joinURL(){ const web=/^https?:$/.test(location.protocol)&&!/^(localhost|127\.|claude\.ai|.*\.claude\.ai)$/.test(location.hostname); return (web?location.origin+location.pathname:PAGE_URL)+'?clase='+L.code; }
@@ -1244,14 +1269,41 @@ function showQR(){ const q=$l('lv-qr'), u=$l('lv-url'), url=joinURL();
     for(let r=0;r<n;r++)for(let c=0;c<n;c++) if(Q.isDark(r,c)) d+=`M${c+m} ${r+m}h1v1h-1z`;
     q.innerHTML=`<svg viewBox="0 0 ${n+2*m} ${n+2*m}" shape-rendering="crispEdges" role="img" aria-label="Código QR para unirse a la clase"><rect width="100%" height="100%" fill="#fff"/><path d="${d}" fill="#000"/></svg>`; q.hidden=false;
     u.textContent='Escanéalo con el móvil o entra en '+url.replace(/^https?:\/\//,''); }catch(e){q.hidden=true;u.textContent='No se ha podido generar el QR. El código también vale.';} }
-function hostStart(){
-  connect(0,(cli,idx)=>{
-    L.cli=cli;L.role='host';L.code=String(idx+1)+String(100+Math.floor(Math.random()*900));L.sol=null; L.extra=[];
+// ----- desempate de avatares: si dos eligen el mismo compositor/a, pregunta sobre él/ella y el primero que acierta se lo queda -----
+L.duels={}; window.__duels=L.duels;
+const avName=k=>(window.AVATARS&&AVATARS[k]&&AVATARS[k].n)||k;
+const ROMAN=['','I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII','XIII','XIV','XV','XVI','XVII','XVIII','XIX','XX','XXI'];
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function makeQ(av,avoid){ const I=window.__AVINFO||{}, info=I[av]; const keys=Object.keys(I).filter(k=>k!==av&&window.AVATARS&&AVATARS[k]);
+  const types=['fact','country','century'].filter(t=>t!==avoid); let type=types[Math.floor(Math.random()*types.length)]; if(!info) type='fact';
+  const country=info?String(info[0]).split('·')[1].trim():'', year=info?parseInt(info[0]):0, cent=Math.floor((year-1)/100)+1;
+  if(type==='country'){ const others=shuffle([...new Set(keys.map(k=>String(I[k][0]).split('·')[1].trim()).filter(c=>c!==country))]).slice(0,3); if(others.length<2) type='fact'; else { const opts=shuffle([country,...others]); return {type,text:`¿De qué país era ${avName(av)}?`,opts,ans:opts.indexOf(country)}; } }
+  if(type==='century'&&year){ const set=new Set([cent]); [cent-1,cent+1,cent-2,cent+2].forEach(c=>{ if(set.size<4&&c>=1&&c<=21) set.add(c); }); const opts=shuffle([...set]).map(c=>'Siglo '+ROMAN[c]); return {type,text:`¿En qué siglo nació ${avName(av)}?`,opts,ans:opts.indexOf('Siglo '+ROMAN[cent])}; }
+  const names=shuffle(keys.slice()).slice(0,3).map(avName), opts=shuffle([avName(av),...names]); const fact=info?info[1]:'';
+  return {type:'fact',text:`«${fact}» ¿De quién se habla?`,opts,ans:opts.indexOf(avName(av))}; }
+function checkAv(id){ const p=L.people.get(id); if(!p||!p.av||L.duels[p.av]||p.lostAv===p.av) return;
+  const rival=[...L.people.entries()].find(([oid,q])=>oid!==id&&q.av===p.av&&q.lostAv!==q.av&&nkey(q.name)!==nkey(p.name)&&Date.now()-q.seen<60000); if(!rival) return;
+  const d=L.duels[p.av]={did:Math.random().toString(36).slice(2,8),av:p.av,players:[rival[0],id],alive:new Set([rival[0],id]),q:makeQ(p.av),round:1};
+  toast(`⚔️ ${rival[1].name} y ${p.name} quieren a ${avName(p.av)}: ¡pregunta de desempate!`); sendDuel(d); }
+function sendDuel(d){ pub(T().host,{t:'duel',did:d.did,av:d.av,to:d.players,round:d.round,q:{text:d.q.text,opts:d.q.opts},names:d.players.map(i=>(L.people.get(i)||{}).name||'')}); }
+function duelAns(id,did,c){ const d=Object.values(L.duels).find(x=>x.did===did); if(!d||!d.alive.has(id)) return;
+  if(c===d.q.ans){ const lose=d.players.filter(x=>x!==id), taken=new Set([...L.people.values()].map(q=>q.av)); const free=(window.AVATARS?Object.keys(AVATARS):[]).filter(k=>!taken.has(k));
+    pub(T().host,{t:'duelres',did,av:d.av,win:id,lose,free,ans:d.q.opts[d.q.ans]}); lose.forEach(x=>{ const q=L.people.get(x); if(q){ q.lostAv=d.av; q.av=null; } }); delete L.duels[d.av];
+    toast(`🏆 ${(L.people.get(id)||{}).name} se queda con ${avName(d.av)}`); hostBar(); return; }
+  d.alive.delete(id); pub(T().host,{t:'duelwrong',did,to:[id]});
+  if(!d.alive.size){ d.round++; d.alive=new Set(d.players); d.q=makeQ(d.av,d.q.type); d.did=Math.random().toString(36).slice(2,8); sendDuel(d); toast('Nadie ha acertado: otra pregunta'); } }
+function hostStart(resume,group,roster){
+  L.group=group||'Mi grupo'; const sv=resume?savedClass(L.group):null; L.roster=roster||(sv&&sv.roster)||[];
+  connect(sv?+sv.code[0]-1:0,(cli,idx)=>{
+    L.cli=cli;L.role='host';L.code=(sv&&+sv.code[0]-1===idx)?sv.code:String(idx+1)+String(100+Math.floor(Math.random()*900));L.sol=null; L.extra=[];
+    if(sv){ L.hist=sv.hist||{}; L.done=sv.done||[]; rosterSeed(); buildRank(); const nx=Math.min(EX.length-1,(sv.ex|0)+((sv.done||[]).includes(EX[sv.ex|0]&&EX[sv.ex|0].n)?1:0)); setTimeout(()=>{ go(nx); toast('Clase recuperada: sigues en el periodo '+EX[nx].n); },300); } else { L.hist={}; L.done=[]; rosterSeed(); buildRank(); }
     const onMsg=(tp,buf)=>{let m;try{m=JSON.parse(buf.toString())}catch(e){return} if(!m||!m.from||dupe(m))return; const name=String(m.name||'Alumno/a').slice(0,20);
       if(m.t==='hello'&&L.people.has(m.from)&&(m.ph!==L.ph||+m.n!==E().n||m.force)){ const t=Date.now(); if(!L.lastRe||t-L.lastRe>1500){ L.lastRe=t; hostPublish(); } }
-      if(m.t==='bye'){L.people.delete(m.from);hostBar();return}
+      if(m.t==='bye'){ const q=L.people.get(m.from); if(q) q.seen=Date.now()-55000; hostBar(); return } // puede ser un F5: se espera unos segundos antes de quitarlo
       let p=L.people.get(m.from); if(!p){p={name};L.people.set(m.from,p);toast(name+' se ha unido');hostPublish()}
-      p.name=name;p.seen=Date.now();if(window.AVATARS&&AVATARS[m.av])p.av=m.av; const cur=+m.n===E().n;
+      if(p.name!==name){ toast(p.name+' ahora es '+name); }
+      p.name=name;p.seen=Date.now();if(window.AVATARS&&AVATARS[m.av]){ p.av=m.av; checkAv(m.from); }
+      if(m.t==='duelans'){ duelAns(m.from,m.did,+m.c); return; } const cur=+m.n===E().n;
       if(m.t==='sub'&&cur&&(L.ph==='draw'||L.ph==='fixed')){ p.sub={n:+m.n,items:(Array.isArray(m.items)?m.items:[]).slice(0,80).map(it=>({p:(+it.p)|0,k:['b','k','t'].includes(it.k)?it.k:'t',x:+it.x||0,y:+it.y||0,w:+it.w||0,h:+it.h||0,t:String(it.t||'').slice(0,40),c:String(it.c||'Y').slice(0,3)}))}; toast(name+' ha enviado'); }
       if(m.t==='score'&&cur&&L.sol&&m.id===L.sol.id) p.n1=Math.max(0,Math.min(10,+m.nota||0));
       if(m.t==='desc'&&cur&&L.ph==='desc'&&Array.isArray(m.a)) p.desc=m.a.slice(0,4).map(v=>v===1?1:v===0?0:null);
@@ -1267,9 +1319,9 @@ function hostStart(){
     hostPublish();hostBar();
   },msg);
 }
-const _go=go; go=function(i){ if(st.fb&&EX[i]&&st.fb.n!==EX[i].n){st.fb=null;st.compare=false;L.score=null} if(L.role==='host'){L.sol=null;L.ph='listen';window.__lph='listen';L.descSol=null;window.__viewSub=null;L.people.forEach(p=>{delete p.sub;delete p.n1;delete p.n2;delete p.fin;delete p.desc})} _go(i); if(L.role==='host'){hostPublish();hostBar()} if(document.body.classList.contains('role-alum')) studentBar(); };
+const _go=go; go=function(i){ if(st.fb&&EX[i]&&st.fb.n!==EX[i].n){st.fb=null;st.compare=false;L.score=null} if(L.role==='host'){L.sol=null;L.ph='listen';window.__lph='listen';L.descSol=null;window.__viewSub=null;L.people.forEach(p=>{delete p.sub;delete p.n1;delete p.n2;delete p.fin;delete p.desc})} _go(i); if(L.role==='host'){hostPublish();hostBar();saveClass()} if(document.body.classList.contains('role-alum')) studentBar(); };
 // ----- alumno -----
-function studentBar(){
+function studentBar(){ saveStu();
   const b=$l('lvbar'); b.hidden=false; document.body.classList.add('hasbar');
   const inClass=L.role==='student', fb=st.fb&&st.fb.n===E().n, s=L.score;
   if(inClass){ const ph=L.hph||'listen';
@@ -1279,9 +1331,9 @@ function studentBar(){
     const lost=L.lastSeen&&Date.now()-L.lastSeen>16000;
     b.innerHTML=`<span class="lvdot${lost?' lost':''}"></span><b>Clase ${L.code}</b><span id="lvme"></span><span class="lvmid" style="flex:1">${lost?'⚠️ Sin señal del profe: reconectando… ':''}${mid}</span>`+
       '<button class="btn" id="sb-sync" type="button" title="Volver a pedir el estado de la clase">🔄</button>'+
-      (ph==='draw'&&!L.sent?'<button class="btn primary" id="sb-send" type="button">📤 Enviar</button>':'')+(ph==='desc'&&!L.dsent?'<button class="btn primary" id="sb-desc" type="button">❓ Responder</button>':'')+((ph==='show'||ph==='descfix')?'<button class="btn" id="sb-pdf" type="button">⬇ PDF</button><button class="btn" id="sb-jpg" type="button">⬇ JPG</button>':'')+'<button class="btn" id="sb-rank" type="button">🏆 Ranking</button>';
+      (ph==='draw'&&!L.sent?'<button class="btn primary" id="sb-send" type="button">📤 Enviar</button>':'')+(ph==='desc'&&!L.dsent?'<button class="btn primary" id="sb-desc" type="button">❓ Responder</button>':'')+(ph==='desc'&&L.dsent?'<button class="btn" id="sb-mydesc" type="button">👁 Mi respuesta</button>':'')+(ph==='descfix'&&L.dval?'<button class="btn" id="sb-mydesc" type="button">👁 Mi descripción</button>':'')+'<button class="btn" id="sb-notes" type="button">📒 Mis notas</button>'+((ph==='show'||ph==='descfix')?'<button class="btn" id="sb-pdf" type="button">⬇ PDF</button><button class="btn" id="sb-jpg" type="button">⬇ JPG</button>':'')+'<button class="btn" id="sb-rank" type="button">🏆 Ranking</button>';
     $l('lvme').textContent=L.name; const on=(id,f)=>{const e=$l(id);if(e)e.onclick=f};
-    on('sb-send',sendMine); on('sb-desc',askDesc); on('sb-sync',()=>window.__resync&&__resync()); on('sb-pdf',()=>exportFile('pdf')); on('sb-jpg',()=>exportFile('jpg')); on('sb-rank',showRank); return; }
+    on('sb-send',sendMine); on('sb-desc',askDesc); on('sb-sync',()=>window.__resync&&__resync()); on('sb-pdf',()=>exportFile('pdf')); on('sb-notes',showMyNotes); on('sb-mydesc',()=>showMyDesc(L.hph==='descfix'?L.lastSol:null)); on('sb-jpg',()=>exportFile('jpg')); on('sb-rank',showRank); return; }
   const mid=fb?(st.fb.clean?'Aquí tienes la solución. Puedes exportarla o pulsar «Reintentar».':(s?`Nota de la estructura: <b>${fmt(s.nota||0)} / 10</b> · ✓ bien (con borde naranja: color cambiado, vale) · ~ casi · ✗ falta`:'')):'Práctica libre: coloca lo que creas y pulsa «Corregir».';
   b.innerHTML=`<span class="lvdot"></span><b>Práctica libre</b><span id="lvme"></span><span class="lvmid" style="flex:1">${mid}</span>`+
     (fb?`<button class="btn" id="sb-clean" type="button" title="Deja la solución y borra lo tuyo">Limpiar</button><button class="btn" id="sb-all" type="button" title="Borra todo y deja la partitura en blanco">Limpiar todo</button><button class="btn" id="sb-jpg" type="button">⬇ JPG</button><button class="btn" id="sb-pdf" type="button">⬇ PDF</button><button class="btn" id="sb-retry" type="button">Reintentar</button>`:`<button class="btn primary" id="sb-fix" type="button">Corregir</button>`);
@@ -1297,7 +1349,25 @@ function askDesc(){ const val=L.dval||(L.dval=[null,null,null,null]);
   modal('dqs',`<h2 style="margin:0;font-family:var(--display)">¿Cómo es este periodo?</h2><p class="hint" style="margin:0">Elige una opción en cada fila.</p><div id="dqf" class="dqf"></div><div class="row" style="justify-content:flex-end"><button class="btn" id="dqs-x" type="button">Luego</button><button class="btn primary" id="dqs-go" type="button" disabled>📤 Enviar</button></div>`);
   const go2=$l('dqs-go'), chk=()=>{ go2.disabled=val.some(v=>v==null); }; descForm($l('dqf'),val,chk,false); chk();
   $l('dqs-x').onclick=()=>closeMod('dqs');
-  go2.onclick=()=>{ pub(T().stu,{t:'desc',from:L.myId,name:L.name,n:E().n,a:val}); L.dsent=true; closeMod('dqs'); studentBar(); toast('Descripción enviada'); }; }
+  go2.onclick=()=>{ pub(T().stu,{t:'desc',from:L.myId,name:L.name,n:E().n,a:val}); L.dsent=true; showMyDesc(); studentBar(); toast('Descripción enviada'); }; }
+// lo que ha respondido el alumno (y, tras corregir, ✓ en verde lo bien y tachado lo mal, con la respuesta correcta)
+function descReview(a,sol){ return `<div class="dqf">${DQ.map((pair,i)=>{ const mine=a[i], ok=sol?mine===sol[i]:null;
+    return `<div class="dqrow">${pair.map((o,j)=>{ let cls='dqopt', mark='';
+      if(mine===j){ cls+=' sel'; if(ok===true){cls+=' good';mark=' <span class="dqm ok">✓</span>'} else if(ok===false){cls+=' bad';mark=' <span class="dqm no">✗</span>'} }
+      else if(sol&&ok===false&&sol[i]===j){ cls+=' right'; mark=' <span class="dqm ok">✓ correcta</span>'; }
+      return `<div class="${cls}">${o}${mark}</div>`; }).join('')}</div>`; }).join('')}</div>`; }
+function showMyDesc(sol){ const a=L.dval||[];
+  modal('dqs',`<h2 style="margin:0;font-family:var(--display)">${sol?'Tu descripción corregida':'Tu respuesta'}</h2><p class="hint" style="margin:0">${sol?'✓ verde: bien · tachado en rojo: mal (al lado, la correcta)':'📤 Enviada. Espera a que el profe corrija.'}</p>${descReview(a,sol)}<div class="row" style="justify-content:flex-end"><button class="btn primary" id="dqs-x" type="button">Cerrar</button></div>`);
+  $l('dqs-x').onclick=()=>closeMod('dqs'); }
+// historial del alumno (se guarda en su móvil)
+const MYK='periodos-misnotas';
+function myNotes(){ try{ return JSON.parse(localStorage.getItem(MYK)||'{}')[nkey(L.name)]||[]; }catch(e){ return []; } }
+function saveMyNote(o){ try{ const all=JSON.parse(localStorage.getItem(MYK)||'{}'), k=nkey(L.name), l=all[k]||[]; const i=l.findIndex(x=>x.n===o.n&&x.day===o.day); if(i>=0) l[i]=o; else l.push(o); all[k]=l.slice(-80); localStorage.setItem(MYK,JSON.stringify(all)); }catch(e){} }
+function showMyNotes(){ const l=myNotes(), tot=l.reduce((a,x)=>a+(+x.fin||0),0);
+  modal('mnm',`<div class="row" style="justify-content:space-between"><h2 style="margin:0;font-family:var(--display)">📒 Mis notas</h2><button class="btn" id="mn-x" type="button">Cerrar ✕</button></div>
+   ${l.length?`<p style="margin:0">Periodos: <b>${l.length}</b> · Suma: <b>${fmt(tot)}</b> · Media: <b>${fmt(tot/l.length)}</b></p><div style="overflow:auto;max-height:62vh"><table class="rk"><thead><tr><th>Fecha</th><th>Periodo</th><th>Estructura</th><th>Descripción</th><th>Final</th><th></th></tr></thead><tbody>${l.map((x,i)=>`<tr><td>${esc(x.day)}</td><td>${esc(x.title)}</td><td>${fmt(x.n1)}${x.tot?` <small>(${x.ok}/${x.tot})</small>`:''}</td><td>${fmt(x.n2)}</td><td><b>${fmt(x.fin)}</b></td><td><button class="btn" data-mn="${i}" type="button">Repasar</button></td></tr><tr class="mnrev" id="mnr${i}" hidden><td colspan=6>${descReview(x.a||[],x.c||null)}</td></tr>`).join('')}</tbody></table></div>`:'<p>Aún no tienes notas de clase.</p>'}`);
+  $l('mn-x').onclick=()=>closeMod('mnm'); document.querySelectorAll('[data-mn]').forEach(b=>b.onclick=()=>{ const r=$l('mnr'+b.dataset.mn); r.hidden=!r.hidden; }); }
+window.__showMyNotes=showMyNotes;
 function lockState(){ const ph=L.hph||'listen'; window.__canDraw=ph==='draw'&&!L.sent; window.__noFicha=ph!=='descfix';
   window.__lockMsg={listen:'🎧 Escucha el periodo. Podrás colorear cuando el profe dé permiso.',draw:'📤 Enviado: ya no puedes añadir nada. Espera la corrección.',fixed:'✅ Corregido.',show:'👀 Sigue el análisis del profe.',desc:'❓ Responde la descripción del periodo.',descfix:'🏁 Periodo terminado.'}[ph]; }
 window.__studentBar=()=>studentBar();
@@ -1347,10 +1417,26 @@ async function exportFile(kind){
     else dl(buildPDF(cs.map(c=>({u8:jpgBytes(c),w:c.width,h:c.height}))),base+'.pdf');
     toast(kind==='jpg'?'JPG guardado':'PDF guardado'); }catch(err){ toast('No se ha podido exportar'); }
 }
+function checkWho(){ if(L.role!=='student') return; const r=L.roster||[]; if(!r.length||r.some(x=>nkey(x)===nkey(L.name))||L.picking) return;
+  L.picking=true; modal('whom',`<h2 style="margin:0;font-family:var(--display)">¿Quién eres?</h2><p class="hint" style="margin:0">Elige tu nombre de la lista de la clase para que tus notas se guarden bien.</p><select id="who-sel" style="font:inherit;padding:10px;border-radius:10px">${r.map(x=>`<option>${esc(x)}</option>`).join('')}</select><div class="row" style="justify-content:flex-end"><button class="btn primary" id="who-ok" type="button">Soy yo</button></div>`);
+  $l('who-ok').onclick=()=>{ L.name=$l('who-sel').value; L.picking=false; try{ localStorage.setItem('periodos-user',L.name); }catch(e){} closeMod('whom'); try{ const o=JSON.parse(sessionStorage.getItem('periodos-sess')||'{}'); o.name=L.name; sessionStorage.setItem('periodos-sess',JSON.stringify(o)); }catch(e){} if(window.__hello) __hello(); studentBar(); toast('Hola, '+L.name); }; }
+function saveStu(){ if(L.role!=='student') return; try{ sessionStorage.setItem('periodos-stu',JSON.stringify({code:L.code,exN:L.exN,hph:L.hph,sent:L.sent,dsent:L.dsent,dval:L.dval,n1:L.n1,n2:L.n2,fin:L.fin,finShown:L.finShown,lastSol:L.lastSol})); }catch(e){} }
+function loadStu(code){ try{ const o=JSON.parse(sessionStorage.getItem('periodos-stu')||'null'); if(o&&o.code===code){ Object.assign(L,{exN:o.exN,hph:o.hph,sent:!!o.sent,dsent:!!o.dsent,dval:o.dval||null,n1:o.n1,n2:o.n2,fin:o.fin,finShown:!!o.finShown,lastSol:o.lastSol||null}); L.restored=true; } }catch(e){} }
+function onDuel(m){ const me=L.myId, avn=avName(String(m.av||''));
+  if(m.t==='duel'&&Array.isArray(m.to)&&m.to.includes(me)){ const rival=(m.names||[]).filter((n,i)=>m.to[i]!==me).join(', ');
+    modal('duelm',`<h2 style="margin:0;font-family:var(--display)">⚔️ Desempate por ${esc(avn)}</h2><p style="margin:0">${esc(rival)} también ha elegido a ${esc(avn)}. Quien acierte antes se lo queda.${m.round>1?' (otra pregunta)':''}</p><p style="margin:0;font-weight:700">${esc(m.q.text)}</p><div class="dqf">${m.q.opts.map((o,i)=>`<button class="dqopt" data-dc="${i}" type="button">${esc(o)}</button>`).join('')}</div><p class="hint" id="duelmsg" style="margin:0"></p>`);
+    document.querySelectorAll('[data-dc]').forEach(b=>b.onclick=()=>{ document.querySelectorAll('[data-dc]').forEach(x=>x.disabled=true); b.classList.add('sel'); $l('duelmsg').textContent='Respuesta enviada…'; pub(T().stu,{t:'duelans',from:me,name:L.name,av:L.av,did:m.did,c:+b.dataset.dc}); }); }
+  if(m.t==='duelwrong'&&Array.isArray(m.to)&&m.to.includes(me)){ const x=$l('duelmsg'); if(x) x.textContent='✗ No es correcto. Espera: si nadie acierta, habrá otra pregunta.'; }
+  if(m.t==='duelres'){ if(m.win===me){ closeMod('duelm'); toast('🏆 ¡Has acertado! Te quedas con '+avn); }
+    else if(Array.isArray(m.lose)&&m.lose.includes(me)){ L.av=''; const free=(m.free||[]).filter(k=>window.AVATARS&&AVATARS[k]);
+      modal('duelm',`<h2 style="margin:0;font-family:var(--display)">Otro/a ha acertado antes</h2><p style="margin:0">La respuesta era: <b>${esc(m.ans||'')}</b>. Elige otro compositor/a:</p><div class="dqf" style="grid-template-columns:1fr 1fr">${free.map(k=>`<button class="dqopt" data-dav="${k}" type="button">${esc(avName(k))}</button>`).join('')||'<p>No quedan libres: te quedas sin avatar.</p>'}</div>`);
+      document.querySelectorAll('#duelm [data-dav]').forEach(b=>b.onclick=()=>{ L.av=b.dataset.dav; window.__avSel=L.av; try{ const o=JSON.parse(sessionStorage.getItem('periodos-sess')||'{}'); o.av=L.av; sessionStorage.setItem('periodos-sess',JSON.stringify(o)); }catch(e){} closeMod('duelm'); if(window.__hello) __hello(); toast('Ahora eres '+avName(L.av)); }); } } }
 function onState(m){
   if(m.tl&&typeof m.tl==='object'){const o={};Object.keys(m.tl).slice(0,40).forEach(k=>{const a=m.tl[k];if(Array.isArray(a)&&a.length<=30&&a.every(x=>typeof x==='number'&&isFinite(x)))o[+k]=a});REMOTE_TL=o}
-  if(Array.isArray(m.rank)) L.rank=m.rank.slice(0,80).map(r=>({id:String(r.id||''),name:String(r.name||'').slice(0,20),n1:r.n1==null?null:+r.n1,n2:r.n2==null?null:+r.n2,fin:r.fin==null?null:+r.fin,avg:+r.avg||0,np:+r.np||0}));
+  if(Array.isArray(m.rank)) L.rank=m.rank.slice(0,120).map(r=>({key:String(r.key||''),name:String(r.name||'').slice(0,20),tot:+r.tot||0,np:+r.np||0,nd:+r.nd||0,last:r.last==null?null:+r.last}));
+  if(Array.isArray(m.roster)) L.roster=m.roster.slice(0,60).map(x=>String(x).slice(0,20)); checkWho();
   const n=+m.n, i=EX.findIndex(e=>e.n===n), ph=['listen','draw','fixed','show','desc','descfix'].includes(m.ph)?m.ph:'listen';
+  if(i>=0&&L.restored&&L.exN===n){ L.restored=false; if(st.ex!==i) go(i); lockState(); } // F5: se recupera lo que llevaba
   if(i>=0&&(L.exN!==n)){ L.exN=n; st.mode='P'; st.adjust=false; st.compare=false; st.fb=null; L.seenSol=null; L.score=null; L.sent=false; L.dsent=false; L.dval=null; L.n1=L.n2=L.fin=null; L.finShown=false; L.hph=null; ANN[n]=[]; saveAnn(); closeMod('dqs'); closeMod('fnm'); go(i); toast('El profe ha elegido un periodo nuevo'); }
   const prev=L.hph; L.hph=ph; if(st.mode!=='P') st.mode='P';
   if(ph==='listen'&&prev&&prev!=='listen'){ L.sent=false; L.dsent=false; L.dval=null; st.fb=null; st.compare=false; L.score=null; L.seenSol=null; ANN[n]=[]; saveAnn(); }
@@ -1362,12 +1448,14 @@ function onState(m){
   else { st.watch=0; L.play=null; }
   lockState(); render(); followPlay();
   if(ph==='desc'&&!L.dsent&&prev!=='desc') askDesc();
-  if(ph==='descfix'&&Array.isArray(m.desc)&&!L.finShown){ L.finShown=true; if(window.__reveal) __reveal(n); closeMod('dqs'); const a=L.dval||[], ok=m.desc.filter((v,k)=>a[k]===v).length;
+  if(ph==='descfix'&&Array.isArray(m.desc)) L.lastSol=m.desc.slice(0,4);
+  if(ph==='descfix'&&Array.isArray(m.desc)&&!L.finShown){ L.finShown=true; if(window.__reveal) __reveal(n); closeMod('dqs'); const a=(L.dval||[]).slice(), ok=m.desc.filter((v,k)=>a[k]===v).length;
     L.n2=ok*2.5; if(L.n1==null) L.n1=L.score?L.score.nota||0:0; L.fin=Math.round((L.n1+L.n2)/2*10)/10;
     pub(T().stu,{t:'final',from:L.myId,name:L.name,n:E().n,n1:L.n1,n2:L.n2,fin:L.fin});
+    { const e=E(); saveMyNote({n:e.n,day:new Date().toLocaleDateString('es-ES'),title:`${e.comp} · ${e.obra}`,n1:L.n1,n2:L.n2,fin:L.fin,ok:L.score?L.score.ok:0,tot:L.score?L.score.total:0,a:a.slice(),c:m.desc.slice()}); }
     modal('fnm',`<h2 style="margin:0;font-family:var(--display)">🏁 Tu nota</h2><table class="rk"><tbody><tr><td>Nota de la estructura</td><td><b>${fmt(L.n1)}</b></td></tr><tr><td>Nota de la descripción (${ok} de 4)</td><td><b>${fmt(L.n2)}</b></td></tr><tr class="me"><td>Nota final (media)</td><td><b>${fmt(L.fin)} / 10</b></td></tr></tbody></table>
-      <p class="hint" style="margin:0">Correcto: ${descTxt(m.desc)}${a.length?' · Tú: '+descTxt(a):''}</p><div class="row" style="justify-content:flex-end"><button class="btn" id="fn-rk" type="button">🏆 Ranking</button><button class="btn primary" id="fn-x" type="button">Cerrar</button></div>`);
-    $l('fn-x').onclick=()=>closeMod('fnm'); $l('fn-rk').onclick=()=>{closeMod('fnm');showRank()}; }
+      <p class="hint" style="margin:0">Tu descripción: ✓ verde bien · tachado en rojo mal (al lado, la correcta)</p>${descReview(a,m.desc)}<div class="row" style="justify-content:flex-end"><button class="btn" id="fn-mn" type="button">📒 Mis notas</button><button class="btn" id="fn-rk" type="button">🏆 Ranking</button><button class="btn primary" id="fn-x" type="button">Cerrar</button></div>`);
+    $l('fn-x').onclick=()=>closeMod('fnm'); $l('fn-rk').onclick=()=>{closeMod('fnm');showRank()}; $l('fn-mn').onclick=()=>{closeMod('fnm');showMyNotes()}; }
   studentBar();
 }
 // el alumnado ve rellenarse los recuadros al ritmo del audio del profe
@@ -1378,11 +1466,12 @@ function join(code,name,fail,ok){
   name=(name||'Alumno/a').slice(0,20);
   if(!/^[1-3]\d{3}$/.test(code)){fail('El código de la clase tiene 4 cifras.');return}
   connect(+code[0]-1,cli=>{
-    L.cli=cli;L.code=code;L.name=name;L.av=(window.AVATARS&&AVATARS[window.__avSel])?window.__avSel:'mozart';let got=false; cli.subscribe(T().host,{qos:1});
+    loadStu(code); L.cli=cli;L.code=code;L.name=name;L.av=(window.AVATARS&&AVATARS[window.__avSel])?window.__avSel:'mozart';let got=false; cli.subscribe(T().host,{qos:1});
     cli.on('connect',()=>{ cli.subscribe(T().host,{qos:1}); hello(); }); // al reconectar (el móvil se bloquea, cambia de red…) se vuelve a pedir el estado
-    cli.on('message',(tp,buf)=>{let m;try{m=JSON.parse(buf.toString())}catch(e){return} if(!m||m.t!=='state'||(m.at&&m.at<(L.lastAt||0)))return; L.lastAt=m.at||L.lastAt; L.lastSeen=Date.now();
+    cli.on('message',(tp,buf)=>{let m;try{m=JSON.parse(buf.toString())}catch(e){return} if(m&&/^duel/.test(m.t)){ if(!dupe(m)) onDuel(m); return; } if(!m||m.t!=='state'||(m.at&&m.at<(L.lastAt||0)))return; L.lastAt=m.at||L.lastAt; L.lastSeen=Date.now();
       if(!got){got=true;L.role='student';document.body.classList.add('student');if(ok)ok();toast('Conectado a la clase '+code)} onState(m)});
-    function hello(force){ pub(T().stu,{t:'hello',from:L.myId,name,av:L.av,ph:L.hph||'',n:L.exN||0,force:force?1:0}); } window.__resync=()=>{ hello(true); toast('Pidiendo el estado al profe…'); }; hello(); clearInterval(L.beat); L.beat=setInterval(()=>{ hello(); if(window.__studentBar) __studentBar(); },6000);
+    window.__hello=()=>hello(true);
+    function hello(force){ pub(T().stu,{t:'hello',from:L.myId,name:L.name,av:L.av,ph:L.hph||'',n:L.exN||0,force:force?1:0}); } window.__resync=()=>{ hello(true); toast('Pidiendo el estado al profe…'); }; hello(); clearInterval(L.beat); L.beat=setInterval(()=>{ hello(); if(window.__studentBar) __studentBar(); },6000);
     setTimeout(()=>{if(!got){try{cli.end(true)}catch(e){}L.cli=null;clearInterval(L.beat);fail('No se encuentra la clase '+code+'. Revisa el código y que el profe la tenga abierta.')}},6000);
   },fail);
 }
@@ -1390,7 +1479,23 @@ function reset(){clearInterval(L.beat);Object.assign(L,{role:null,cli:null,code:
 function leave(){try{pub(T().stu,{t:'bye',from:L.myId,name:L.name});L.cli&&L.cli.end()}catch(e){}reset()}
 function endAll(){try{L.cli&&L.cli.publish(T().host,'',{retain:true});L.cli&&L.cli.end()}catch(e){}closeM();reset()}
 $l('liveBtn').onclick=()=>{openM(); if(!L.role){$l('lv-start').hidden=false;$l('lv-hostview').hidden=true}};
-$l('lv-close').onclick=closeM; $l('lv-done').onclick=closeM; $l('lv-host').onclick=hostStart;
+$l('lv-close').onclick=closeM; $l('lv-done').onclick=closeM;
+{ const box=$l('lv-host').parentElement; $l('lv-host').remove();
+  const gb=document.createElement('div'); gb.className='grpbox'; box.appendChild(gb);
+  const PRESET=['Análisis 6ºA','Análisis 6ºB','Análisis 6ºC'];
+  const draw=()=>{ const g=groups(), names=[...new Set(PRESET.concat(Object.keys(g)))], sel=gb.dataset.sel&&(names.includes(gb.dataset.sel)||gb.dataset.sel==='__new')?gb.dataset.sel:names[0], sv=g[sel]&&g[sel].code?g[sel]:null, sr=g[sel]&&g[sel].roster;
+    gb.innerHTML=`<label>Grupo</label><select id="lv-grp">${names.map(n=>`<option value="${esc(n)}" ${n===sel?'selected':''}>${esc(n)}</option>`).join('')}<option value="__new" ${sel==='__new'?'selected':''}>➕ Grupo nuevo…</option></select>
+      ${sel==='__new'?'<input id="lv-gname" maxlength="30" placeholder="Nombre del grupo, p. ej. 1º A">':''}
+      <label>Lista del alumnado <small>(un nombre por línea; opcional, pero así cada uno elige su nombre y no hay confusiones)</small></label>
+      <textarea id="lv-roster" rows="5" placeholder="Ana García&#10;Luis Pérez&#10;…">${sr?esc(sr.join('\n')):''}</textarea>
+      ${sv?`<p class="hint" style="margin:0">Última clase: ${new Date(sv.at).toLocaleDateString('es-ES')} · código ${sv.code} · ${(sv.done||[]).length} periodo(s) hechos · ${Object.keys(sv.hist||{}).length} en el ranking</p>`:''}
+      <div class="row">${sv?'<button class="btn primary" id="lv-cont" type="button">↩ Continuar este grupo</button><button class="btn warn" id="lv-zero" type="button">Empezar de cero</button>':'<button class="btn primary" id="lv-new" type="button">Abrir clase</button>'}</div>`;
+    const rost=()=>$l('lv-roster').value.split(/\n/).map(x=>x.trim().slice(0,20)).filter(Boolean);
+    $l('lv-grp').onchange=e=>{ gb.dataset.sel=e.target.value; draw(); };
+    const nw=$l('lv-new'); if(nw) nw.onclick=()=>{ const nm=sel==='__new'?((($l('lv-gname')||{}).value||'').trim()||'Grupo nuevo'):sel; hostStart(false,nm,rost()); };
+    const ct=$l('lv-cont'); if(ct) ct.onclick=()=>{ const g2=groups(); g2[sel].roster=rost(); saveGroups(g2); hostStart(true,sel,rost()); };
+    const zr=$l('lv-zero'); if(zr) zr.onclick=()=>{ if(!confirm('¿Borrar las notas de '+sel+' y empezar de cero?')) return; hostStart(false,sel,rost()); }; };
+  draw(); $l('liveBtn').addEventListener('click',()=>{ if(!L.role) draw(); }); }
 addEventListener('pagehide',()=>{try{if(L.role==='student')pub(T().stu,{t:'bye',from:L.myId,name:L.name});if(L.role==='host')L.cli.publish(T().host,'',{retain:true})}catch(e){}});
 /* ---------- pantalla de inicio ---------- */
 const PASS={prof:'6928',alum:'1111'}, startEl=$l('start');
