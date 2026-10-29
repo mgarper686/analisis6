@@ -44,6 +44,45 @@ body.isfs .stage{max-width:none}
 #zFol[aria-pressed=true]{background:#13803A;color:#fff;border-color:#13803A}
 body.role-alum #zFol,body.role-alum #zNorm,body:not(.role-prof) #zFol,body:not(.role-prof) #zNorm{display:none!important}
 </style>
+<style id="r6-css">
+body.student #aud{display:none!important}
+/* móvil: al dibujar o mover no se desplaza la página (para moverse: herramienta «Desplazar» o fuera de la partitura) */
+.stage.edit.tool-box,.stage.edit.tool-bracket,.stage.edit.armed{touch-action:none!important;overscroll-behavior:contain}
+.stage.edit.tool-move{touch-action:pan-x pan-y}
+.stage.edit .box,.stage.edit .tx,.stage.edit .br,.stage.edit .blabel,.stage.edit .handle{touch-action:none}
+body.dragging{overflow:hidden;touch-action:none}
+@media (pointer:coarse){.handle{width:22px!important;height:22px!important;margin:-4px 0 0 -4px}}
+.lvst{font-weight:700}
+.chipn.on{outline:2px solid #E83FC6}
+button.chipn{cursor:pointer;font:inherit;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:2px 8px}
+.qmod .lvbox{max-width:640px}
+.dqf{display:grid;gap:8px}
+.dqrow{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.dqopt{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-weight:700;cursor:pointer;background:var(--surface)}
+.dqopt:has(input:checked){background:var(--ink);color:var(--bg)}
+.rk{width:100%;border-collapse:collapse;font-size:14px}.rk th,.rk td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left}.rk tr.me td{background:rgba(255,208,0,.25)}
+</style>
+<style id="r6-css">
+/* móvil: al colorear, las herramientas van en una barra fija abajo y la partitura queda libre; no se desplaza la página al dibujar */
+@media (max-width:700px){
+ body.pmode.candraw #bar{position:fixed;left:0;right:0;top:auto;bottom:var(--lvh,0px);z-index:38;margin:0;padding:6px 8px;gap:5px;background:var(--surface);border-top:1px solid var(--line);box-shadow:0 -4px 14px rgba(0,0,0,.12);max-height:36vh;overflow-y:auto}
+ body.pmode.candraw #bar .row{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;gap:5px}
+ body.pmode.candraw #bar .row::-webkit-scrollbar{display:none}
+ body.pmode.candraw #bar .row>*{flex:0 0 auto}
+ body.pmode.candraw #bar>p.hint,body.pmode.candraw #bar .sep{display:none}
+ body.pmode.candraw #bar .btn{padding:7px 10px;font-size:14px}
+ body.pmode.candraw .chip{padding:6px 9px;font-size:13px}
+ body.pmode.candraw #panels{padding-bottom:calc(var(--bh,160px) + 8px)}
+ body.pmode.candraw .fz{top:28px;bottom:auto;right:6px;padding:3px}
+ body.pmode.candraw .fz .btn{padding:5px 8px;min-width:32px}
+ body.pmode .lvbar{gap:4px 8px;padding-top:5px;padding-bottom:calc(5px + env(safe-area-inset-bottom,0px));font-size:13px}
+ body.pmode .lvbar .lvmid{flex-basis:100%;order:9;font-size:12px;line-height:1.25}
+ body.pmode.candraw .exhead .sub{display:none}
+}
+body.drawlock{overscroll-behavior:none}
+body.drawlock .stage.edit{touch-action:none!important}
+</style>
+<style id="r8-css">#bFix[aria-pressed=true]{background:#13803A;color:#fff;border-color:#13803A}body.drawlock{overflow:hidden;overscroll-behavior:none}body.drawlock .stage.edit .scroll,body.drawlock .scroll{overflow:hidden}</style>
 </head><body>
 <title>Periodos clásicos</title>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -522,7 +561,7 @@ const LS={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}
 const HOSTPERM=window.HOSTPERM=new Set();
 function permCode(n){ const d=new Date(), k=d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate(); let h=Math.imul(n*7919+k,2654435761)>>>0; h=Math.imul(h^(h>>>15),2246822519)>>>0; return 1000+(h%9000); }
 const isAlum=()=>document.body.classList.contains('role-alum');
-function allowed(){ if(!isAlum()) return true; const n=E().n; if(document.body.classList.contains('student')) return !!(window.__perm&&window.__perm.has(n)); return true; }
+function allowed(){ if(!isAlum()) return true; if(document.body.classList.contains('student')) return !!window.__canDraw; return true; } // en clase: solo cuando el profe da permiso y hasta que se envía
 let st={hide:true,mode:'T',ex:0,step:0,adjust:false,compare:false,tool:'move',color:'Y',armed:null,sel:null};
 let ANN=LS.get('periodos-ann',{}), ADJ=LS.get('periodos-adj',{}), UNDO={};
 try{ if((+LS.get('periodos-adjv',0))<2){ [2,3,4,6].forEach(n=>{delete ADJ[n]}); [4,6].forEach(n=>{delete ANN[n]}); LS.set('periodos-adj',ADJ); LS.set('periodos-ann',ANN); LS.set('periodos-adjv',2); }
@@ -585,7 +624,7 @@ function renderHead(){
   $('#exS').textContent=hid?'Escucha y analiza: frases, semifrases, forma bar y ampliaciones':e.parte;
   document.body.classList.toggle('anon',hid);
   const f=$('#ficha');
-  const showF=(st.mode==='T'&&!st.hide&&st.step>=e.steps.length)||(st.compare&&!!st.fb);
+  const showF=(st.mode==='T'&&!st.hide&&st.step>=e.steps.length&&!['show','desc'].includes(window.__lph))||(st.compare&&!!st.fb&&!window.__noFicha);
   f.hidden=!showF;
   f.innerHTML=`<b>Tipo de periodo · ${e.ton}</b>${e.tipo}`;
 }
@@ -601,6 +640,13 @@ function chipDrag(b){ // arrastrar una etiqueta hasta la partitura y soltarla do
       const it={id:uid(),p:+stg.dataset.p,k:'t',x,y:y-1.2,t,c:'navy'}; pushUndo(); annOf().push(it); st.armed=null; st.tool='move'; st.sel={src:'ann',id:it.id}; saveAnn(); render(); };
     addEventListener('pointermove',mv); addEventListener('pointerup',up); addEventListener('pointercancel',up); };
 }
+// en el móvil la partitura queda fija mientras se dibuja: solo se mueve con «Desplazar» o con los botones de zoom
+document.addEventListener('touchmove',e=>{ const t=e.target; if(!(t&&t.closest)) return; if(document.body.classList.contains('dragging')||(document.body.classList.contains('drawlock')&&t.closest('.stage.edit'))) e.preventDefault(); },{passive:false});
+document.addEventListener('gesturestart',e=>{ if(document.body.classList.contains('drawlock')) e.preventDefault(); });
+function mobileDock(){ // marca si el alumnado puede dibujar ahora (para la barra fija del móvil) y bloquea el desplazamiento con Recuadro/Corchete
+  const can=st.mode==='P'&&allowed(); document.body.classList.toggle('candraw',can);
+  document.body.classList.toggle('drawlock',can&&(st.tool==='box'||st.tool==='bracket'||!!st.armed||(st.fix!==false&&st.tool!=='pan')));
+  const b=$('#bar'); if(b) document.documentElement.style.setProperty('--bh',(can?b.offsetHeight:0)+'px'); }
 function renderBar(){
   const bar=$('#bar'), e=E(); bar.innerHTML='';
   if(st.mode==='T'){
@@ -615,12 +661,11 @@ function renderBar(){
       b.onclick=()=>{st.hide=false;st.step=i+1;render()}; li.appendChild(b); ol.appendChild(li);});
     bar.appendChild(ol);
     const r2=document.createElement('div'); r2.className='row';
-    r2.innerHTML=`<div class="legend">${[['Y','Amarillo · semifrase antecedente'],['M','Morado · semifrase consecuente']].map(([k,n])=>`<span><i style="background:${hexA(COL[k],.55)};border:1px solid ${COL[k]}"></i>${n}</span>`).join('')}</div><span class="sep"></span><button class="btn" id="bPerm" aria-pressed="${HOSTPERM.has(e.n)}" title="El alumnado podrá colorear y corregir este periodo">${HOSTPERM.has(e.n)?'🔓 Alumnado: puede colorear':'🔒 Dar permiso para colorear'}</button><span class="sep"></span><button class="btn" id="bAdj" aria-pressed="${st.adjust}">Ajustar posiciones</button>${Object.keys(adjOf()).length?'<button class="btn warn" id="bAdjR">Restablecer</button>':''}`;
+    r2.innerHTML=`<div class="legend">${[['Y','Amarillo · semifrase antecedente'],['M','Morado · semifrase consecuente']].map(([k,n])=>`<span><i style="background:${hexA(COL[k],.55)};border:1px solid ${COL[k]}"></i>${n}</span>`).join('')}</div><span class="sep"></span><button class="btn" id="bAdj" aria-pressed="${st.adjust}">Ajustar posiciones</button>${Object.keys(adjOf()).length?'<button class="btn warn" id="bAdjR">Restablecer</button>':''}`;
     bar.appendChild(r2);
     $('#stepinfo').innerHTML=st.hide?'<small>Análisis oculto</small>No se ve nada, ni al reproducir. Pulsa «Ocultar» o «Siguiente» para presentarlo.':st.step===0?'<small>Paso 0/'+N+'</small>Partitura en blanco: el análisis aparecerá con la música':`<small>Paso ${st.step}/${N}</small>${e.steps[st.step-1]}`;
     $('#bPrev').disabled=st.step===0; $('#bNext').disabled=st.step>=N;
     $('#bHide').onclick=()=>{ if(st.hide){st.hide=false;} else {st.hide=true;st.step=0;curK=-1;clearWipe();} render(); };
-    $('#bPerm').onclick=()=>{ HOSTPERM.has(e.n)?HOSTPERM.delete(e.n):HOSTPERM.add(e.n); hostSend(); render(); };
     $('#bPrev').onclick=()=>{st.hide=false;if(st.step>0){st.step--;}render()};
     $('#bNext').onclick=()=>{st.hide=false;if(st.step<N){st.step++;}render()};
     $('#bAll').onclick=()=>{st.hide=false;st.step=N;render()};
@@ -628,14 +673,14 @@ function renderBar(){
     const r=$('#bAdjR'); if(r) r.onclick=()=>{delete ADJ[e.n];LS.set('periodos-adj',ADJ);st.sel=null;render()};
   }else if(!allowed()){
     const inClass=document.body.classList.contains('student'), r=document.createElement('div'); r.className='row lockrow';
-    r.innerHTML=`<span class="lockmsg">🔒 Primero escucha la música${inClass?'. Podrás colorear cuando el profesor dé permiso.':'. Para colorear, escribe el código que te dé el profesor:'}</span>`+(inClass?'':`<input id="permIn" inputmode="numeric" maxlength="4" placeholder="0000" aria-label="Código del profesor"><button class="btn primary" id="permGo" type="button">Desbloquear</button>`);
+    r.innerHTML=`<span class="lockmsg">${window.__lockMsg||'🔒 Escucha la música. Podrás colorear cuando el profesor dé permiso.'}</span>`+(inClass?'':`<input id="permIn" inputmode="numeric" maxlength="4" placeholder="0000" aria-label="Código del profesor"><button class="btn primary" id="permGo" type="button">Desbloquear</button>`);
     bar.appendChild(r);
     if(!inClass){ const go2=()=>{ const v=+$('#permIn').value.trim(); if(v===permCode(e.n)){ const ok=LS.get('periodos-perm',{}); ok[e.n]=v; LS.set('periodos-perm',ok); render(); if(window.__studentBar) __studentBar(); } else { $('#permIn').value=''; $('#permIn').placeholder='No es correcto'; } };
       $('#permGo').onclick=go2; $('#permIn').onkeydown=ev=>{ if(ev.key==='Enter') go2(); }; }
   }else{
     const r1=document.createElement('div'); r1.className='row';
-    const tools=[['move','Mover'],['box','Recuadro'],['bracket','Corchete'],['pan','Desplazar']];
-    r1.innerHTML=tools.map(([k,n])=>`<button class="btn" data-tool="${k}" aria-pressed="${st.tool===k&&!st.armed}">${n}</button>`).join('')+
+    const tools=[['move','Mover'],['box','Recuadro'],['bracket','Corchete'],['pan','✋ Desplazar']];
+    r1.innerHTML=tools.map(([k,n])=>`<button class="btn" data-tool="${k}" aria-pressed="${st.tool===k&&!st.armed}">${n}</button>`).join('')+`<button class="btn" id="bFix" type="button" aria-pressed="${st.fix!==false}" title="La partitura no se mueve al dibujar con el dedo. Para moverla, usa «Desplazar».">📌 Partitura fija</button>`+
       `<span class="sep"></span>`+PAL.filter(([k])=>k==='Y'||k==='M').map(([k,n])=>`<button class="sw" data-c="${k}" title="${k==='M'?'Morado':n}" aria-label="${k==='M'?'Morado':n}" aria-pressed="${st.color===k}" style="background:${COL[k]}"></button>`).join('')+
       `<span class="sep"></span><button class="btn" id="bUndo">Deshacer</button><button class="btn" id="bDel" ${st.sel?'':'disabled'}>Borrar selección</button><button class="btn warn" id="bClr">Borrar todo</button><span class="sep"></span><button class="btn" id="bCmp" aria-pressed="${st.compare}">Comparar con la solución</button>`;
     bar.appendChild(r1);
@@ -649,6 +694,7 @@ function renderBar(){
       st.tool==='pan'?'Arrastra para moverte por la partitura ampliada (con el dedo, basta deslizar).':st.tool==='text'?'Toca la partitura para escribir un texto.':
       'Arrastra cualquier elemento para moverlo; el cuadrado azul cambia su tamaño. Doble clic en un texto para editarlo. Elige un color con un elemento seleccionado para cambiarlo.';
     bar.appendChild(r3);
+    { const bf=$('#bFix'); if(bf) bf.onclick=()=>{ st.fix=st.fix===false; render(); }; }
     bar.querySelectorAll('[data-tool]').forEach(b=>b.onclick=()=>{st.tool=b.dataset.tool;st.armed=null;if(st.tool!=='move')st.sel=null;render()});
     bar.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{st.color=b.dataset.c;
       if(st.sel&&st.sel.src==='ann'){const it=annOf().find(a=>a.id===st.sel.id); if(it){pushUndo();it.c=st.color;saveAnn();}}
@@ -658,7 +704,7 @@ function renderBar(){
     const clr=$('#bClr'); clr.onclick=()=>{ if(clr.dataset.c){pushUndo();ANN[E().n]=[];saveAnn();st.sel=null;render()} else {clr.dataset.c='1';clr.textContent='¿Borrar todo? Confirmar';setTimeout(()=>{if(clr.isConnected){clr.dataset.c='';clr.textContent='Borrar todo'}},3500)} };
     $('#bCmp').onclick=()=>{st.compare=!st.compare;render()};
   }
-  zoomUI();
+  zoomUI(); requestAnimationFrame(mobileDock);
 }
 function zoomUI(){ const v=$('#zVal'); if(!v) return; v.textContent='🔍 '+Math.round(st.zoom*100)+' %'; $('#zOut').disabled=st.zoom<=.25; $('#zIn').disabled=st.zoom>=3.5; $('#zFit').setAttribute('aria-pressed',st.fit); }
 function zoomBy(f){ setZoom(st.zoom*f); }
@@ -904,6 +950,7 @@ function paint(stg,anim){
   fills.innerHTML=''; marks.innerHTML='';
   if(st.mode==='T'){
     solItems().filter(it=>it.p===p&&it.s<=st.step).forEach(it=>draw(it,fills,marks,{src:'sol',id:it.i,fresh:anim&&it.s>lastStep&&it.s===st.step}));
+    const vs=window.__viewSub; if(vs&&vs.n===E().n) vs.items.filter(it=>it.p===p).forEach(it=>draw(it,fills,marks,{src:'watch',id:'v'}));
   }else{
     solItems().filter(it=>it.k==='l'&&it.p===p).forEach(it=>draw(it,fills,marks,{src:'watch',id:it.i}));
     if(st.compare) cmpItems().filter(it=>it.p===p&&it.k!=='l').forEach(it=>{draw(it,fills,marks,{src:(st.fb&&st.fb.clean)?'watch':'ghost',id:it.i}); const r=st.fb&&!st.fb.clean&&st.fb.n===E().n&&st.fb.res[it.i]; if(r){const d=document.createElement('div');d.className='fb '+r;d.textContent=r==='ok'?'✓':r==='part'?'~':'✗';d.style.left=it.x+'%';d.style.top=it.y+'%';marks.appendChild(d);}});
@@ -995,6 +1042,7 @@ function bindStage(stg){
   stg.addEventListener('pointermove',ev=>{ if(pan){pan.sc.scrollLeft=pan.l-(ev.clientX-pan.x);window.scrollTo(window.scrollX,pan.t-(ev.clientY-pan.y));} });
   stg.addEventListener('pointerup',()=>{pan=null});
   stg.addEventListener('pointerup',end); stg.addEventListener('pointercancel',end);
+  stg.addEventListener('pointerdown',()=>{ if(drag) document.body.classList.add('dragging'); }); const undrag=()=>document.body.classList.remove('dragging'); stg.addEventListener('pointerup',undrag); stg.addEventListener('pointercancel',undrag);
   stg.addEventListener('dblclick',ev=>{ const tg=ev.target.closest('[data-ref]'); if(!tg||st.mode!=='P') return; const [src,id]=tg.dataset.ref.split(':'); if(src!=='ann') return; const it=annOf().find(a=>a.id===id); if(it&&it.k!=='b') startEdit(id); });
 }
 let rafPending=false;
@@ -1039,7 +1087,7 @@ $('#mP').onclick=()=>{st.mode='P';st.adjust=false;st.sel=null;render()};
 function render(){
   ensureEx(E());
   $('#mT').setAttribute('aria-pressed',st.mode==='T'); $('#mP').setAttribute('aria-pressed',st.mode==='P');
-  renderHead(); renderBar(); renderPanels();
+  renderHead(); renderBar(); renderPanels(); if(window.__hostSync) __hostSync();
 }
 buildIndex(); render(); fitSoon(false);
 </script>
@@ -1084,26 +1132,82 @@ function grade(sol,mine){
   return {res,ok,total:sol.items.filter(gr).length};
 }
 window.__grade=grade;
+// ----- nota sobre 10: frases, semifrases y ampliaciones (bien = 1, casi = ½); la forma bar no cuenta -----
+const isBar=it=>/^bar\b/i.test(String(it.t||'').trim());
+function nota10(items,res){ let n=0,p=0; items.forEach((it,i)=>{ const r=res[i]; if(!r||isBar(it)) return; n++; p+=r==='ok'?1:r==='part'?.5:0; }); return n?Math.round(p/n*100)/10:0; }
+const fmt=v=>(Math.round(v*10)/10).toLocaleString('es-ES',{minimumFractionDigits:1,maximumFractionDigits:1});
 function correct(sol){
   if(+sol.n!==E().n) return;
   const items=(Array.isArray(sol.items)?sol.items:[]).slice(0,80).map(it=>({s:+it.s||0,p:(+it.p)|0,k:it.k==='b'||it.k==='k'||it.k==='l'?it.k:'t',x:+it.x||0,y:+it.y||0,w:+it.w||0,h:+it.h||0,t:String(it.t||'').slice(0,80),c:String(it.c||'').slice(0,3),ng:it.ng?1:0,sf:it.sf?1:0,lk:it.lk?1:0}));
-  const g=grade({items},ANN[sol.n]||[]); if(window.__reveal) __reveal(sol.n); st.fb={n:sol.n,items,res:g.res}; st.compare=true; st.sel=null; L.score=g; render(); studentBar();
-  pub(T().stu,{t:'score',from:L.myId,name:L.name,id:sol.id,ok:g.ok,total:g.total}); toast('Corrección: '+g.ok+' de '+g.total+' bien');
+  const g=grade({items},ANN[sol.n]||[]); g.nota=nota10(items,g.res); if(window.__reveal&&L.role!=='student') __reveal(sol.n); st.fb={n:sol.n,items,res:g.res}; st.compare=true; st.sel=null; L.score=g; render(); studentBar();
+  if(L.role==='student'){ L.n1=g.nota; pub(T().stu,{t:'score',from:L.myId,name:L.name,n:sol.n,id:sol.id,ok:g.ok,total:g.total,nota:g.nota}); }
+  toast('Nota de la estructura: '+fmt(g.nota)+' / 10');
 }
+// ----- descripción del periodo -----
+const DQ=[['Binario','Ternario'],['Paralelo','Contrastante'],['Simétrico','Asimétrico'],['Abierto','Cerrado']];
+const DESC={1:'BPSC',2:'BPSC',3:'BPSC',4:'BPSC',5:'BPSC',6:'BPSA',7:'BPSC',8:'BPAC',9:'BCSC',10:'BCSC',11:'BCSC',12:'BCAC',13:'BCAC',14:'BCAC',15:'BPAA',16:'BPAA',17:'BPAC'};
+const descDef=n=>{ const s=DESC[n]||'BPSC'; return [s[0]==='T'?1:0, s[1]==='C'?1:0, s[2]==='A'?1:0, s[3]==='C'?1:0]; };
+const descTxt=a=>a.map((v,i)=>v==null?'—':DQ[i][v]).join(' · ');
+function descForm(el,val,onch,dis){ el.innerHTML=DQ.map((pair,i)=>`<div class="dqrow">${pair.map((o,j)=>`<label class="dqopt"><input type="radio" name="dq${i}${el.id}" value="${j}" ${val[i]===j?'checked':''} ${dis?'disabled':''}> ${o}</label>`).join('')}</div>`).join('');
+  el.querySelectorAll('input').forEach(inp=>inp.onchange=()=>{ val[+inp.name[2]]=+inp.value; if(onch) onch(); }); }
+function modal(id,html){ let m=$l(id); if(!m){ m=document.createElement('div'); m.id=id; m.className='lv qmod'; m.setAttribute('role','dialog'); m.setAttribute('aria-modal','true'); document.body.appendChild(m); }
+  m.innerHTML=`<div class="lvbox">${html}</div>`; m.hidden=false; return m; }
+const closeMod=id=>{ const m=$l(id); if(m) m.hidden=true; };
+// ----- ranking -----
+function rankRows(){ return (L.rank||[]).slice().sort((a,b)=>(b.fin-a.fin)||(b.avg-a.avg)); }
+function showRank(){ const rows=rankRows();
+  modal('rkm',`<div class="row" style="justify-content:space-between"><h2 style="margin:0;font-family:var(--display)">🏆 Ranking</h2><button class="btn" id="rk-x" type="button">Cerrar ✕</button></div>
+   ${rows.length?`<table class="rk"><thead><tr><th>#</th><th>Nombre</th><th>Estructura</th><th>Descripción</th><th>Nota del periodo</th><th>Media de la clase (${rows[0].np||1} p.)</th></tr></thead><tbody>${rows.map((r,i)=>`<tr${r.id===L.myId?' class="me"':''}><td>${i+1}</td><td>${esc(r.name)}</td><td>${r.n1==null?'—':fmt(r.n1)}</td><td>${r.n2==null?'—':fmt(r.n2)}</td><td><b>${r.fin==null?'—':fmt(r.fin)}</b></td><td>${fmt(r.avg||0)}</td></tr>`).join('')}</tbody></table>`:'<p>Todavía no hay notas.</p>'}`);
+  $l('rk-x').onclick=()=>closeMod('rkm'); }
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+window.__showRank=showRank;
 // ----- profe -----
-function hostPublish(){pub(T().host,{t:'state',n:E().n,sol:L.sol,tl:TLX,perm:[...(window.HOSTPERM||[])],at:Date.now()},true)}
+// fases de cada periodo: listen (escuchan) → draw (colorean y envían) → fixed (corregido) → show (todos siguen la partitura del profe) → desc (descripción) → descfix (notas y ranking)
+L.ph='listen'; L.hist={}; L.descSol=null;
+function hostPublish(){ const e=E();
+  pub(T().host,{t:'state',n:e.n,ph:L.ph,sol:L.ph==='fixed'?L.sol:null,step:st.step,hide:!!st.hide,desc:L.ph==='descfix'?L.descSol:null,rank:L.rankPub||[],tl:TLX,at:Date.now()},true); }
 window.__hostPublish=hostPublish;
+let lastSync='';
+window.__hostSync=()=>{ if(L.role!=='host') return; const k=[E().n,st.step,st.hide,L.ph].join('|'); if(k!==lastSync){ lastSync=k; hostPublish(); } };
+function setPh(ph){ L.ph=ph; window.__lph=ph; window.__viewSub=null; hostPublish(); hostBar(); render(); }
+function buildRank(){ const n=E().n; L.rankPub=[...L.people.entries()].map(([id,p])=>{ const h=L.hist[id]||(L.hist[id]={name:p.name,notes:{}}); h.name=p.name; if(p.fin!=null) h.notes[n]=p.fin;
+    const vs=Object.values(h.notes); return {id,name:p.name,n1:p.n1,n2:p.n2,fin:p.fin,avg:vs.length?vs.reduce((a,b)=>a+b,0)/vs.length:0,np:vs.length}; }); L.rank=L.rankPub; }
 function hostBar(){
-  const n=L.people.size, b=$l('lvbar'); b.hidden=false; document.body.classList.add('hasbar');
-  b.innerHTML=`<span class="lvdot"></span><b>Clase ${L.code}</b><span>${n} conectado${n===1?'':'s'}</span><span class="lvnames" id="lvn"></span><button class="btn primary" id="lv-fix" type="button">Corregir</button><button class="btn" id="lv-unfix" type="button" ${L.sol?'':'disabled'}>Quitar corrección</button><button class="btn" id="lv-show" type="button">📱 Código y QR</button><button class="btn warn" id="lv-stop" type="button">Cerrar clase</button>`;
-  [$l('lvn'),$l('lv-names')].forEach(box=>{box.innerHTML='';[...L.people.values()].forEach(p=>{const s=document.createElement('span');s.className='chipn'+(p.score?' sc':'');s.style.cssText='display:inline-flex;align-items:center;gap:5px';s.appendChild(document.createTextNode(p.name+(p.score?` ${p.score.ok}/${p.score.total}`:'')));box.appendChild(s)})});
+  const ppl=[...L.people.entries()], n=ppl.length, b=$l('lvbar'); b.hidden=false; document.body.classList.add('hasbar');
+  const sent=ppl.filter(([,p])=>p.sub).length, dsent=ppl.filter(([,p])=>p.desc).length;
+  const B=(id,txt,cls,dis)=>`<button class="btn ${cls||''}" id="${id}" type="button" ${dis?'disabled':''}>${txt}</button>`;
+  const act={listen:B('lv-perm','🔓 Dejar colorear','primary'),
+    draw:`<span class="lvst">📤 ${sent}/${n} enviados</span>`+B('lv-fix','✅ Corregir','primary'),
+    fixed:B('lv-show2','🧹 Limpiar y mostrar el análisis','primary'),
+    show:B('lv-ask','❓ Preguntar la descripción','primary'),
+    desc:`<span class="lvst">📤 ${dsent}/${n} respuestas</span>`+B('lv-dview','Ver respuestas')+B('lv-dfix','✅ Corregir descripción','primary'),
+    descfix:B('lv-next','⏭ Limpiar y siguiente periodo','primary')}[L.ph]||'';
+  b.innerHTML=`<span class="lvdot"></span><b>Clase ${L.code}</b><span>${n} conectado${n===1?'':'s'}</span><span class="lvnames" id="lvn"></span>${act}${B('lv-rank','🏆 Ranking')}${B('lv-show','📱 Código y QR')}${B('lv-stop','Cerrar clase','warn')}`;
+  [$l('lvn'),$l('lv-names')].forEach(box=>{ box.innerHTML=''; ppl.forEach(([id,p])=>{ const s=document.createElement(box.id==='lvn'?'button':'span'); s.type='button';
+      s.className='chipn'+(p.sub?' sc':'')+(window.__viewSub&&window.__viewSub.id===id?' on':''); s.style.cssText='display:inline-flex;align-items:center;gap:5px';
+      s.textContent=p.name+(p.fin!=null?' · '+fmt(p.fin):p.n1!=null?' · '+fmt(p.n1):p.sub?' ✉':'')+(L.ph==='desc'&&p.desc?' ✓':'');
+      if(box.id==='lvn'){ s.title=p.sub?'Ver su envío sobre tu partitura':'Aún no ha enviado'; s.onclick=()=>{ if(!p.sub) return; window.__viewSub=(window.__viewSub&&window.__viewSub.id===id)?null:{id,n:p.sub.n,items:p.sub.items,name:p.name}; if(window.__viewSub) toast('Viendo el envío de '+p.name+' (vuelve a pulsar para quitarlo)'); hostBar(); render(); }; }
+      box.appendChild(s); }); });
   $l('lv-count').textContent=n?`${n} conectado${n===1?'':'s'}`:'Esperando conexiones…';
-  $l('lv-fix').onclick=fixNow; $l('lv-unfix').onclick=()=>{L.sol=null;hostPublish();hostBar()}; $l('lv-show').onclick=openM; $l('lv-stop').onclick=endAll;
+  const on=(id,f)=>{const e=$l(id);if(e)e.onclick=f};
+  on('lv-perm',()=>setPh('draw')); on('lv-fix',fixNow);
+  on('lv-show2',()=>{ st.hide=false; st.step=E().steps.length; setPh('show'); });
+  on('lv-ask',()=>{ L.descSol=descDef(E().n); ppl.forEach(([,p])=>delete p.desc); setPh('desc'); descPanel(); });
+  on('lv-dview',descPanel); on('lv-dfix',descFix);
+  on('lv-next',()=>{ closeMod('dqm'); const i=Math.min(EX.length-1,st.ex+1); if(i===st.ex) toast('Era el último periodo'); go(i); });
+  on('lv-rank',()=>{ buildRank(); showRank(); }); on('lv-show',openM); on('lv-stop',endAll);
 }
-function fixNow(){ // la solución que el profe ha puesto: lo mostrado hasta el paso actual (o todo si aún no ha mostrado nada)
-  const step=st.step; const items=solItems().filter(it=>step===0||it.s<=step).map(it=>({s:it.s,p:it.p,k:it.k,x:it.x,y:it.y,w:it.w,h:it.h,t:it.t,c:it.c,ng:it.ng?1:0,sf:it.sf||0,lk:it.lk?1:0}));
-  L.sol={id:Date.now(),n:E().n,step,items}; L.people.forEach(p=>delete p.score); hostPublish(); hostBar(); toast('Corrección enviada al alumnado');
+function fixNow(){ // la solución completa del periodo
+  const items=solItems().map(it=>({s:it.s,p:it.p,k:it.k,x:it.x,y:it.y,w:it.w,h:it.h,t:it.t,c:it.c,ng:it.ng?1:0,sf:it.sf||0,lk:it.lk?1:0}));
+  L.sol={id:Date.now(),n:E().n,items}; L.people.forEach(p=>{delete p.n1;delete p.n2;delete p.fin}); setPh('fixed'); toast('Corrección enviada: a cada alumno/a se le corrige lo suyo');
 }
+function descPanel(){ const e=E(), ppl=[...L.people.values()], sol=L.descSol||(L.descSol=descDef(e.n));
+  const m=modal('dqm',`<div class="row" style="justify-content:space-between"><h2 style="margin:0;font-family:var(--display)">Descripción del periodo ${e.n}</h2><button class="btn" id="dq-x" type="button">Cerrar ✕</button></div>
+    <p class="hint" style="margin:0">Respuesta correcta (puedes cambiarla antes de corregir):</p><div id="dqsol" class="dqf"></div>
+    <table class="rk"><thead><tr><th>Nombre</th><th>Respuesta</th></tr></thead><tbody>${ppl.map(p=>`<tr><td>${esc(p.name)}</td><td>${p.desc?descTxt(p.desc):'<i>sin responder</i>'}</td></tr>`).join('')||'<tr><td colspan=2>Nadie conectado</td></tr>'}</tbody></table>
+    ${L.ph==='desc'?'<button class="btn primary" id="dq-fix" type="button">✅ Corregir descripción</button>':''}`);
+  descForm($l('dqsol'),sol,()=>{},L.ph!=='desc'); $l('dq-x').onclick=()=>closeMod('dqm'); const f=$l('dq-fix'); if(f) f.onclick=descFix; }
+function descFix(){ L.descSol=L.descSol||descDef(E().n); closeMod('dqm'); setPh('descfix'); toast('Descripción corregida'); }
 // dirección pública de la página (GitHub Pages). Si cambias el nombre del archivo o del repositorio, cámbiala aquí.
 const PAGE_URL='https://mgarper686.github.io/Scarlatti/periodos-clasicos.html';
 function joinURL(){ const web=/^https?:$/.test(location.protocol)&&!/^(localhost|127\.|claude\.ai|.*\.claude\.ai)$/.test(location.hostname); return (web?location.origin+location.pathname:PAGE_URL)+'?clase='+L.code; }
@@ -1119,25 +1223,48 @@ function hostStart(){
     cli.on('message',(tp,buf)=>{let m;try{m=JSON.parse(buf.toString())}catch(e){return} if(!m||!m.from)return; const name=String(m.name||'Alumno/a').slice(0,20);
       if(m.t==='bye'){L.people.delete(m.from);hostBar();return}
       let p=L.people.get(m.from); if(!p){p={name};L.people.set(m.from,p);toast(name+' se ha unido');hostPublish()}
-      p.name=name;p.seen=Date.now();if(window.AVATARS&&AVATARS[m.av])p.av=m.av; if(m.t==='score'&&L.sol&&m.id===L.sol.id)p.score={ok:+m.ok||0,total:+m.total||0}; hostBar()});
+      p.name=name;p.seen=Date.now();if(window.AVATARS&&AVATARS[m.av])p.av=m.av; const cur=+m.n===E().n;
+      if(m.t==='sub'&&cur&&(L.ph==='draw'||L.ph==='fixed')){ p.sub={n:+m.n,items:(Array.isArray(m.items)?m.items:[]).slice(0,80).map(it=>({p:(+it.p)|0,k:['b','k','t'].includes(it.k)?it.k:'t',x:+it.x||0,y:+it.y||0,w:+it.w||0,h:+it.h||0,t:String(it.t||'').slice(0,40),c:String(it.c||'Y').slice(0,3)}))}; toast(name+' ha enviado'); }
+      if(m.t==='score'&&cur&&L.sol&&m.id===L.sol.id) p.n1=Math.max(0,Math.min(10,+m.nota||0));
+      if(m.t==='desc'&&cur&&L.ph==='desc'&&Array.isArray(m.a)) p.desc=m.a.slice(0,4).map(v=>v===1?1:v===0?0:null);
+      if(m.t==='final'&&cur){ p.n2=Math.max(0,Math.min(10,+m.n2||0)); if(p.n1==null&&isFinite(+m.n1)) p.n1=+m.n1; p.fin=Math.max(0,Math.min(10,+m.fin||0)); buildRank(); hostPublish(); }
+      hostBar(); if(document.getElementById('dqm')&&!document.getElementById('dqm').hidden&&m.t==='desc') descPanel(); });
     $l('lv-start').hidden=true;$l('lv-hostview').hidden=false;$l('lv-codebig').textContent=L.code;msg('');showQR();
     clearInterval(L.beat);L.beat=setInterval(()=>{const t=Date.now();[...L.people].forEach(([id,p])=>{if(t-p.seen>70000)L.people.delete(id)});hostBar()},15000);
     hostPublish();hostBar();
   },msg);
 }
-const _go=go; go=function(i){ if(st.fb&&EX[i]&&st.fb.n!==EX[i].n){st.fb=null;st.compare=false;L.score=null} _go(i); if(L.role==='host'){L.sol=null;hostPublish();hostBar()} if(document.body.classList.contains('role-alum')) studentBar(); };
+const _go=go; go=function(i){ if(st.fb&&EX[i]&&st.fb.n!==EX[i].n){st.fb=null;st.compare=false;L.score=null} if(L.role==='host'){L.sol=null;L.ph='listen';window.__lph='listen';L.descSol=null;window.__viewSub=null;L.people.forEach(p=>{delete p.sub;delete p.n1;delete p.n2;delete p.fin;delete p.desc})} _go(i); if(L.role==='host'){hostPublish();hostBar()} if(document.body.classList.contains('role-alum')) studentBar(); };
 // ----- alumno -----
 function studentBar(){
   const b=$l('lvbar'); b.hidden=false; document.body.classList.add('hasbar');
   const inClass=L.role==='student', fb=st.fb&&st.fb.n===E().n, s=L.score;
-  const mid=!fb&&!allowed()?'Escucha primero la música. Cuando el profe te dé permiso podrás colorear y corregir.':fb?(st.fb.clean?'Aquí tienes la solución. Puedes exportarla o pulsar «Reintentar».':(s?`Corrección: <b>${s.ok} de ${s.total}</b> bien · ✓ bien · ~ casi (revisa color o nombre) · ✗ falta`:'')):(inClass?'Coloca las frases y sus semifrases. El profe corregirá cuando lo diga.':'Práctica libre: coloca lo que creas y pulsa «Corregir».');
-  b.innerHTML=`<span class="lvdot"></span><b>${inClass?'Clase '+L.code:'Práctica libre'}</b><span id="lvme"></span><span class="lvmid" style="flex:1">${mid}</span>`+
-    (fb?`<button class="btn" id="sb-clean" type="button" title="Deja la solución y borra lo tuyo">Limpiar</button><button class="btn" id="sb-all" type="button" title="Borra todo y deja la partitura en blanco">Limpiar todo</button><button class="btn" id="sb-jpg" type="button">⬇ JPG</button><button class="btn" id="sb-pdf" type="button">⬇ PDF</button><button class="btn" id="sb-retry" type="button">Reintentar</button>`:(inClass||!allowed()?'':`<button class="btn primary" id="sb-fix" type="button">Corregir</button>`));
+  if(inClass){ const ph=L.hph||'listen';
+    const mid={listen:'🎧 Escucha el periodo. Cuando el profe te dé permiso podrás colorear.',draw:L.sent?'📤 Enviado. Espera a que el profe corrija.':'✏️ Marca frases, semifrases, forma bar y ampliaciones. Cuando acabes, pulsa «Enviar».',
+      fixed:s?`Nota de la estructura: <b>${fmt(s.nota||0)} / 10</b> · ✓ bien · ~ casi · ✗ falta`:'Corrigiendo…',show:'👀 Sigue el análisis en la pantalla del profe.',desc:L.dsent?'📤 Descripción enviada. Espera la corrección.':'❓ Responde la descripción del periodo.',
+      descfix:L.fin!=null?`Estructura ${fmt(L.n1||0)} · Descripción ${fmt(L.n2||0)} · <b>Nota final ${fmt(L.fin)}</b>`:''}[ph]||'';
+    b.innerHTML=`<span class="lvdot"></span><b>Clase ${L.code}</b><span id="lvme"></span><span class="lvmid" style="flex:1">${mid}</span>`+
+      (ph==='draw'&&!L.sent?'<button class="btn primary" id="sb-send" type="button">📤 Enviar</button>':'')+(ph==='desc'&&!L.dsent?'<button class="btn primary" id="sb-desc" type="button">❓ Responder</button>':'')+'<button class="btn" id="sb-rank" type="button">🏆 Ranking</button>';
+    $l('lvme').textContent=L.name; const on=(id,f)=>{const e=$l(id);if(e)e.onclick=f};
+    on('sb-send',sendMine); on('sb-desc',askDesc); on('sb-rank',showRank); return; }
+  const mid=fb?(st.fb.clean?'Aquí tienes la solución. Puedes exportarla o pulsar «Reintentar».':(s?`Nota de la estructura: <b>${fmt(s.nota||0)} / 10</b> · ✓ bien · ~ casi (revisa color o nombre) · ✗ falta`:'')):'Práctica libre: coloca lo que creas y pulsa «Corregir».';
+  b.innerHTML=`<span class="lvdot"></span><b>Práctica libre</b><span id="lvme"></span><span class="lvmid" style="flex:1">${mid}</span>`+
+    (fb?`<button class="btn" id="sb-clean" type="button" title="Deja la solución y borra lo tuyo">Limpiar</button><button class="btn" id="sb-all" type="button" title="Borra todo y deja la partitura en blanco">Limpiar todo</button><button class="btn" id="sb-jpg" type="button">⬇ JPG</button><button class="btn" id="sb-pdf" type="button">⬇ PDF</button><button class="btn" id="sb-retry" type="button">Reintentar</button>`:`<button class="btn primary" id="sb-fix" type="button">Corregir</button>`);
   $l('lvme').textContent=L.name;
   const on=(id,f)=>{const e=$l(id);if(e)e.onclick=f};
   on('sb-fix',selfCorrect); on('sb-clean',cleanMine); on('sb-all',cleanAll); on('sb-retry',()=>{st.fb=null;st.compare=false;L.score=null;render();studentBar()});
   on('sb-jpg',()=>exportFile('jpg')); on('sb-pdf',()=>exportFile('pdf'));
 }
+function sendMine(){ const items=(ANN[E().n]||[]).slice(0,80).map(it=>({p:it.p,k:it.k,x:+(+it.x).toFixed(2),y:+(+it.y).toFixed(2),w:+(+it.w||0).toFixed(2),h:+(+it.h||0).toFixed(2),t:String(it.t||'').slice(0,40),c:it.c}));
+  if(!items.length&&!confirm('No has marcado nada. ¿Enviar igualmente?')) return;
+  pub(T().stu,{t:'sub',from:L.myId,name:L.name,n:E().n,items}); L.sent=true; lockState(); render(); studentBar(); toast('Enviado al profe'); }
+function askDesc(){ const val=L.dval||(L.dval=[null,null,null,null]);
+  modal('dqs',`<h2 style="margin:0;font-family:var(--display)">¿Cómo es este periodo?</h2><p class="hint" style="margin:0">Elige una opción en cada fila.</p><div id="dqf" class="dqf"></div><div class="row" style="justify-content:flex-end"><button class="btn" id="dqs-x" type="button">Luego</button><button class="btn primary" id="dqs-go" type="button" disabled>📤 Enviar</button></div>`);
+  const go2=$l('dqs-go'), chk=()=>{ go2.disabled=val.some(v=>v==null); }; descForm($l('dqf'),val,chk,false); chk();
+  $l('dqs-x').onclick=()=>closeMod('dqs');
+  go2.onclick=()=>{ pub(T().stu,{t:'desc',from:L.myId,name:L.name,n:E().n,a:val}); L.dsent=true; closeMod('dqs'); studentBar(); toast('Descripción enviada'); }; }
+function lockState(){ const ph=L.hph||'listen'; window.__canDraw=ph==='draw'&&!L.sent; window.__noFicha=ph!=='descfix';
+  window.__lockMsg={listen:'🎧 Escucha el periodo. Podrás colorear cuando el profe dé permiso.',draw:'📤 Enviado: ya no puedes añadir nada. Espera la corrección.',fixed:'✅ Corregido.',show:'👀 Sigue el análisis del profe.',desc:'❓ Responde la descripción del periodo.',descfix:'🏁 Periodo terminado.'}[ph]; }
 window.__studentBar=()=>studentBar();
 function selfCorrect(){ correct({id:'self'+Date.now(),n:E().n,items:solItems().map(it=>({s:it.s,p:it.p,k:it.k,x:it.x,y:it.y,w:it.w,h:it.h,t:it.t,c:it.c,ng:it.ng?1:0,sf:it.sf||0,lk:it.lk?1:0}))}); }
 function cleanAll(){ ANN[E().n]=[]; saveAnn(); st.sel=null; st.fb=null; st.compare=false; L.score=null; render(); studentBar(); }
@@ -1185,13 +1312,25 @@ async function exportFile(kind){
     toast(kind==='jpg'?'JPG guardado':'PDF guardado'); }catch(err){ toast('No se ha podido exportar'); }
 }
 function onState(m){
-  { const was=window.__perm?[...window.__perm].join():''; window.__perm=new Set(Array.isArray(m.perm)?m.perm.map(Number).filter(isFinite).slice(0,40):[]); if(was!==[...window.__perm].join()&&L.exN===+m.n){ render(); if(window.__perm.has(+m.n)) toast('El profe te deja colorear'); } }
   if(m.tl&&typeof m.tl==='object'){const o={};Object.keys(m.tl).slice(0,40).forEach(k=>{const a=m.tl[k];if(Array.isArray(a)&&a.length<=30&&a.every(x=>typeof x==='number'&&isFinite(x)))o[+k]=a});REMOTE_TL=o}
-  const n=+m.n, i=EX.findIndex(e=>e.n===n);
-  if(i>=0&&(L.exN!==n)){L.exN=n;st.mode='P';st.adjust=false;st.compare=false;st.fb=null;L.seenSol=null;L.score=null;go(i);toast('El profe ha elegido el periodo '+n)}
-  else if(st.mode!=='P'){st.mode='P';render()}
-  if(m.sol&&m.sol.id!==L.seenSol){L.seenSol=m.sol.id;correct(m.sol)}
-  else if(!m.sol&&L.seenSol){L.seenSol=null;L.score=null;st.fb=null;st.compare=false;render()}
+  if(Array.isArray(m.rank)) L.rank=m.rank.slice(0,80).map(r=>({id:String(r.id||''),name:String(r.name||'').slice(0,20),n1:r.n1==null?null:+r.n1,n2:r.n2==null?null:+r.n2,fin:r.fin==null?null:+r.fin,avg:+r.avg||0,np:+r.np||0}));
+  const n=+m.n, i=EX.findIndex(e=>e.n===n), ph=['listen','draw','fixed','show','desc','descfix'].includes(m.ph)?m.ph:'listen';
+  if(i>=0&&(L.exN!==n)){ L.exN=n; st.mode='P'; st.adjust=false; st.compare=false; st.fb=null; L.seenSol=null; L.score=null; L.sent=false; L.dsent=false; L.dval=null; L.n1=L.n2=L.fin=null; L.finShown=false; L.hph=null; ANN[n]=[]; saveAnn(); closeMod('dqs'); closeMod('fnm'); go(i); toast('El profe ha elegido un periodo nuevo'); }
+  const prev=L.hph; L.hph=ph; if(st.mode!=='P') st.mode='P';
+  if(ph==='listen'&&prev&&prev!=='listen'){ L.sent=false; L.dsent=false; L.dval=null; st.fb=null; st.compare=false; L.score=null; L.seenSol=null; ANN[n]=[]; saveAnn(); }
+  if(ph==='fixed'&&m.sol&&m.sol.id!==L.seenSol){ L.seenSol=m.sol.id; lockState(); correct(m.sol); }
+  if(ph==='show'||ph==='desc'||ph==='descfix'){ // pantallas limpias: se ve la partitura del profe con sus colores
+    if(prev==='fixed'||prev==='draw'||prev==='listen'||!prev){ st.fb=null; st.compare=false; ANN[n]=[]; saveAnn(); }
+    st.watch=m.hide?0:Math.max(0,+m.step||0); watchFresh=false; }
+  else st.watch=0;
+  lockState(); render();
+  if(ph==='desc'&&!L.dsent&&prev!=='desc') askDesc();
+  if(ph==='descfix'&&Array.isArray(m.desc)&&!L.finShown){ L.finShown=true; if(window.__reveal) __reveal(n); closeMod('dqs'); const a=L.dval||[], ok=m.desc.filter((v,k)=>a[k]===v).length;
+    L.n2=ok*2.5; if(L.n1==null) L.n1=L.score?L.score.nota||0:0; L.fin=Math.round((L.n1+L.n2)/2*10)/10;
+    pub(T().stu,{t:'final',from:L.myId,name:L.name,n:E().n,n1:L.n1,n2:L.n2,fin:L.fin});
+    modal('fnm',`<h2 style="margin:0;font-family:var(--display)">🏁 Tu nota</h2><table class="rk"><tbody><tr><td>Nota de la estructura</td><td><b>${fmt(L.n1)}</b></td></tr><tr><td>Nota de la descripción (${ok} de 4)</td><td><b>${fmt(L.n2)}</b></td></tr><tr class="me"><td>Nota final (media)</td><td><b>${fmt(L.fin)} / 10</b></td></tr></tbody></table>
+      <p class="hint" style="margin:0">Correcto: ${descTxt(m.desc)}${a.length?' · Tú: '+descTxt(a):''}</p><div class="row" style="justify-content:flex-end"><button class="btn" id="fn-rk" type="button">🏆 Ranking</button><button class="btn primary" id="fn-x" type="button">Cerrar</button></div>`);
+    $l('fn-x').onclick=()=>closeMod('fnm'); $l('fn-rk').onclick=()=>{closeMod('fnm');showRank()}; }
   studentBar();
 }
 function join(code,name,fail,ok){
