@@ -83,6 +83,7 @@ body.drawlock{overscroll-behavior:none}
 body.drawlock .stage.edit{touch-action:none!important}
 </style>
 <style id="r8-css">#bFix[aria-pressed=true]{background:#13803A;color:#fff;border-color:#13803A}body.drawlock{overflow:hidden;overscroll-behavior:none}body.drawlock .stage.edit .scroll,body.drawlock .scroll{overflow:hidden}</style>
+<style>.lvdot.lost{background:#e08a00!important}</style>
 </head><body>
 <title>Periodos clásicos</title>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -1099,7 +1100,9 @@ const BROKERS=[{url:'wss://public.cloud.shiftr.io',username:'public',password:'p
 const NS='periodosclasicos-aula/';
 const L={role:null,cli:null,code:null,name:'',myId:'u'+Math.random().toString(36).slice(2,10),people:new Map(),sol:null,exN:null,seenSol:null,score:null,beat:null};
 const T=()=>({host:NS+L.code+'/pantalla',stu:NS+L.code+'/moviles'});
-const pub=(tp,o,r)=>{if(L.cli&&L.cli.connected)L.cli.publish(tp,JSON.stringify(o),{qos:0,retain:!!r})};
+// se publica en todos los servidores a los que se está conectado (el profe se conecta a los tres, por si alguno pierde mensajes)
+const pub=(tp,o,r)=>{ if(!o.mid) o.mid=Math.random().toString(36).slice(2,10); const txt=JSON.stringify(o); [L.cli,...(L.extra||[])].forEach(c=>{ try{ if(c&&c.connected) c.publish(tp,txt,{qos:1,retain:!!r}); }catch(e){} }); };
+const seenMid=new Set(); const dupe=m=>{ if(!m.mid) return false; if(seenMid.has(m.mid)) return true; seenMid.add(m.mid); if(seenMid.size>600) seenMid.clear(); return false; };
 const msg=t=>{$l('lv-msg').textContent=t;const s=$l('st-msg');if(s)s.textContent=t};
 function toast(t){const d=document.createElement('div');d.textContent=t;$l('lvtoast').appendChild(d);setTimeout(()=>d.remove(),2800);while($l('lvtoast').children.length>3)$l('lvtoast').firstChild.remove()}
 function connect(idx,ok,fail){
@@ -1219,8 +1222,9 @@ function showQR(){ const q=$l('lv-qr'), u=$l('lv-url'), url=joinURL();
     u.textContent='Escanéalo con el móvil o entra en '+url.replace(/^https?:\/\//,''); }catch(e){q.hidden=true;u.textContent='No se ha podido generar el QR. El código también vale.';} }
 function hostStart(){
   connect(0,(cli,idx)=>{
-    L.cli=cli;L.role='host';L.code=String(idx+1)+String(100+Math.floor(Math.random()*900));L.sol=null; cli.subscribe(T().stu);
-    cli.on('message',(tp,buf)=>{let m;try{m=JSON.parse(buf.toString())}catch(e){return} if(!m||!m.from)return; const name=String(m.name||'Alumno/a').slice(0,20);
+    L.cli=cli;L.role='host';L.code=String(idx+1)+String(100+Math.floor(Math.random()*900));L.sol=null; L.extra=[];
+    const onMsg=(tp,buf)=>{let m;try{m=JSON.parse(buf.toString())}catch(e){return} if(!m||!m.from||dupe(m))return; const name=String(m.name||'Alumno/a').slice(0,20);
+      if(m.t==='hello'&&L.people.has(m.from)&&(m.ph!==L.ph||+m.n!==E().n||m.force)){ const t=Date.now(); if(!L.lastRe||t-L.lastRe>1500){ L.lastRe=t; hostPublish(); } }
       if(m.t==='bye'){L.people.delete(m.from);hostBar();return}
       let p=L.people.get(m.from); if(!p){p={name};L.people.set(m.from,p);toast(name+' se ha unido');hostPublish()}
       p.name=name;p.seen=Date.now();if(window.AVATARS&&AVATARS[m.av])p.av=m.av; const cur=+m.n===E().n;
@@ -1228,7 +1232,12 @@ function hostStart(){
       if(m.t==='score'&&cur&&L.sol&&m.id===L.sol.id) p.n1=Math.max(0,Math.min(10,+m.nota||0));
       if(m.t==='desc'&&cur&&L.ph==='desc'&&Array.isArray(m.a)) p.desc=m.a.slice(0,4).map(v=>v===1?1:v===0?0:null);
       if(m.t==='final'&&cur){ p.n2=Math.max(0,Math.min(10,+m.n2||0)); if(p.n1==null&&isFinite(+m.n1)) p.n1=+m.n1; p.fin=Math.max(0,Math.min(10,+m.fin||0)); buildRank(); hostPublish(); }
-      hostBar(); if(document.getElementById('dqm')&&!document.getElementById('dqm').hidden&&m.t==='desc') descPanel(); });
+      hostBar(); if(document.getElementById('dqm')&&!document.getElementById('dqm').hidden&&m.t==='desc') descPanel(); };
+    const hook=c=>{ c.subscribe(T().stu,{qos:1}); c.on('message',onMsg); c.on('connect',()=>{ c.subscribe(T().stu,{qos:1}); hostPublish(); }); };
+    hook(cli);
+    BROKERS.forEach((B,j)=>{ if(j===idx) return; try{ const c=mqtt.connect(B.url,{clientId:L.myId+'-x'+j,clean:true,connectTimeout:8000,reconnectPeriod:3000,keepalive:30,username:B.username,password:B.password}); c.on('error',()=>{}); L.extra.push(c);
+      c.once('connect',()=>{ hostPublish(); }); hook(c); }catch(e){} });
+    clearInterval(L.hb); L.hb=setInterval(()=>{ if(L.role==='host') hostPublish(); },5000);
     $l('lv-start').hidden=true;$l('lv-hostview').hidden=false;$l('lv-codebig').textContent=L.code;msg('');showQR();
     clearInterval(L.beat);L.beat=setInterval(()=>{const t=Date.now();[...L.people].forEach(([id,p])=>{if(t-p.seen>70000)L.people.delete(id)});hostBar()},15000);
     hostPublish();hostBar();
@@ -1243,10 +1252,12 @@ function studentBar(){
     const mid={listen:'🎧 Escucha el periodo. Cuando el profe te dé permiso podrás colorear.',draw:L.sent?'📤 Enviado. Espera a que el profe corrija.':'✏️ Marca frases, semifrases, forma bar y ampliaciones. Cuando acabes, pulsa «Enviar».',
       fixed:s?`Nota de la estructura: <b>${fmt(s.nota||0)} / 10</b> · ✓ bien · ~ casi · ✗ falta`:'Corrigiendo…',show:'👀 Sigue el análisis en la pantalla del profe.',desc:L.dsent?'📤 Descripción enviada. Espera la corrección.':'❓ Responde la descripción del periodo.',
       descfix:L.fin!=null?`Estructura ${fmt(L.n1||0)} · Descripción ${fmt(L.n2||0)} · <b>Nota final ${fmt(L.fin)}</b>`:''}[ph]||'';
-    b.innerHTML=`<span class="lvdot"></span><b>Clase ${L.code}</b><span id="lvme"></span><span class="lvmid" style="flex:1">${mid}</span>`+
+    const lost=L.lastSeen&&Date.now()-L.lastSeen>16000;
+    b.innerHTML=`<span class="lvdot${lost?' lost':''}"></span><b>Clase ${L.code}</b><span id="lvme"></span><span class="lvmid" style="flex:1">${lost?'⚠️ Sin señal del profe: reconectando… ':''}${mid}</span>`+
+      '<button class="btn" id="sb-sync" type="button" title="Volver a pedir el estado de la clase">🔄</button>'+
       (ph==='draw'&&!L.sent?'<button class="btn primary" id="sb-send" type="button">📤 Enviar</button>':'')+(ph==='desc'&&!L.dsent?'<button class="btn primary" id="sb-desc" type="button">❓ Responder</button>':'')+'<button class="btn" id="sb-rank" type="button">🏆 Ranking</button>';
     $l('lvme').textContent=L.name; const on=(id,f)=>{const e=$l(id);if(e)e.onclick=f};
-    on('sb-send',sendMine); on('sb-desc',askDesc); on('sb-rank',showRank); return; }
+    on('sb-send',sendMine); on('sb-desc',askDesc); on('sb-sync',()=>window.__resync&&__resync()); on('sb-rank',showRank); return; }
   const mid=fb?(st.fb.clean?'Aquí tienes la solución. Puedes exportarla o pulsar «Reintentar».':(s?`Nota de la estructura: <b>${fmt(s.nota||0)} / 10</b> · ✓ bien · ~ casi (revisa color o nombre) · ✗ falta`:'')):'Práctica libre: coloca lo que creas y pulsa «Corregir».';
   b.innerHTML=`<span class="lvdot"></span><b>Práctica libre</b><span id="lvme"></span><span class="lvmid" style="flex:1">${mid}</span>`+
     (fb?`<button class="btn" id="sb-clean" type="button" title="Deja la solución y borra lo tuyo">Limpiar</button><button class="btn" id="sb-all" type="button" title="Borra todo y deja la partitura en blanco">Limpiar todo</button><button class="btn" id="sb-jpg" type="button">⬇ JPG</button><button class="btn" id="sb-pdf" type="button">⬇ PDF</button><button class="btn" id="sb-retry" type="button">Reintentar</button>`:`<button class="btn primary" id="sb-fix" type="button">Corregir</button>`);
@@ -1338,10 +1349,11 @@ function join(code,name,fail,ok){
   name=(name||'Alumno/a').slice(0,20);
   if(!/^[1-3]\d{3}$/.test(code)){fail('El código de la clase tiene 4 cifras.');return}
   connect(+code[0]-1,cli=>{
-    L.cli=cli;L.code=code;L.name=name;L.av=(window.AVATARS&&AVATARS[window.__avSel])?window.__avSel:'mozart';let got=false; cli.subscribe(T().host);
-    cli.on('message',(tp,buf)=>{let m;try{m=JSON.parse(buf.toString())}catch(e){return} if(!m||m.t!=='state')return;
+    L.cli=cli;L.code=code;L.name=name;L.av=(window.AVATARS&&AVATARS[window.__avSel])?window.__avSel:'mozart';let got=false; cli.subscribe(T().host,{qos:1});
+    cli.on('connect',()=>{ cli.subscribe(T().host,{qos:1}); hello(); }); // al reconectar (el móvil se bloquea, cambia de red…) se vuelve a pedir el estado
+    cli.on('message',(tp,buf)=>{let m;try{m=JSON.parse(buf.toString())}catch(e){return} if(!m||m.t!=='state'||(m.at&&m.at<(L.lastAt||0)))return; L.lastAt=m.at||L.lastAt; L.lastSeen=Date.now();
       if(!got){got=true;L.role='student';document.body.classList.add('student');if(ok)ok();toast('Conectado a la clase '+code)} onState(m)});
-    const hello=()=>pub(T().stu,{t:'hello',from:L.myId,name,av:L.av}); hello(); clearInterval(L.beat); L.beat=setInterval(hello,20000);
+    function hello(force){ pub(T().stu,{t:'hello',from:L.myId,name,av:L.av,ph:L.hph||'',n:L.exN||0,force:force?1:0}); } window.__resync=()=>{ hello(true); toast('Pidiendo el estado al profe…'); }; hello(); clearInterval(L.beat); L.beat=setInterval(()=>{ hello(); if(window.__studentBar) __studentBar(); },6000);
     setTimeout(()=>{if(!got){try{cli.end(true)}catch(e){}L.cli=null;clearInterval(L.beat);fail('No se encuentra la clase '+code+'. Revisa el código y que el profe la tenga abierta.')}},6000);
   },fail);
 }
