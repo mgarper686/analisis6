@@ -230,6 +230,35 @@
     }
     .enlace:hover .flecha { transform: translateX(3px); }
 
+    .conceptos {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 0.9rem;
+      margin-bottom: 1.6rem;
+    }
+    .concepto {
+      background: var(--fondo);
+      border: 1px solid var(--linea);
+      border-radius: 12px;
+      padding: 0.9rem 1.1rem 1rem;
+    }
+    .concepto h3 {
+      font-family: 'Sora', sans-serif;
+      font-weight: 600;
+      font-size: 1rem;
+      line-height: 1.3;
+      margin-bottom: 0.25rem;
+    }
+    .concepto p {
+      color: var(--tinta-suave);
+      font-size: 0.97rem;
+      line-height: 1.45;
+    }
+    .compositor > p.nota {
+      margin: 1rem 0 0;
+      font-size: 0.95rem;
+    }
+
     @media (prefers-reduced-motion: reduce) {
       html { scroll-behavior: auto; }
       nav a, .enlace, .enlace .flecha { transition: none; }
@@ -270,7 +299,7 @@
         <ul>
           <li><a href="https://mgarper686.github.io/">Inicio</a></li>
           <li><a href="#scarlatti">Scarlatti</a></li>
-          <li><a href="https://mgarper686.github.io/Periodos/">Períodos</a></li>
+          <li><a href="#periodos">Períodos</a></li>
           <li><a href="https://mgarper686.github.io/Mozart/">W. A. Mozart</a></li>
           <li><a href="https://mgarper686.github.io/Beethoven/">L. van Beethoven</a></li>
         </ul>
@@ -285,7 +314,7 @@
     <main>
 
       <p class="intro">
-        Elige un compositor y accede a su biografía o al análisis de sus obras, compás a compás.
+        Elige un compositor o un tema y accede a sus materiales: biografías, apuntes y análisis de obras, compás a compás.
       </p>
 
       <!-- Para añadir otro compositor, copia este bloque <section> completo -->
@@ -336,6 +365,72 @@
             <span class="flecha" aria-hidden="true">→</span>
           </a>
         </div>
+      </section>
+
+      <!-- Sección de tema (sin fechas): mismo bloque que un compositor -->
+      <section class="compositor" id="periodos">
+        <div class="compositor-cabecera">
+          <div class="inicial" aria-hidden="true">P</div>
+          <div>
+            <h2>Períodos clásicos</h2>
+            <div class="chips">
+              <span class="chip">Estructura formal</span>
+              <span class="chip periodo">Clasicismo</span>
+            </div>
+          </div>
+        </div>
+
+        <p>
+          El período es una unidad formal con sentido completo: una expresión musical que
+          llega a una cadencia y no necesita otra unidad que la complete. Se divide en frases
+          y estas, a su vez, en semifrases. A finales del siglo XVIII y comienzos del XIX es
+          especialmente habitual la frase de cuatro compases: un período de 8 compases se
+          reparte en frases de 4 + 4 y semifrases de 2 + 2.
+        </p>
+
+        <div class="conceptos">
+          <div class="concepto">
+            <h3>Antecedente y consecuente</h3>
+            <p>Pregunta y respuesta. El antecedente queda abierto, con un final suspensivo (por ejemplo, una semicadencia); el consecuente cierra con una cadencia conclusiva.</p>
+          </div>
+          <div class="concepto">
+            <h3>Cerrado o abierto</h3>
+            <p>Depende de la cadencia final: si es conclusiva, el período es cerrado; si es suspensiva, es abierto.</p>
+          </div>
+          <div class="concepto">
+            <h3>Binario, simétrico o asimétrico</h3>
+            <p>Un período binario tiene dos frases. Es simétrico si duran lo mismo (4 + 4, 8 + 8) y asimétrico si no, por ejemplo cuando hay una ampliación.</p>
+          </div>
+          <div class="concepto">
+            <h3>Ampliaciones</h3>
+            <p>Internas, si retrasan la cadencia con repeticiones o interpolaciones (suelen aparecer en el consecuente); externas, si llegan después de la cadencia, como una coda.</p>
+          </div>
+        </div>
+
+        <div class="enlaces">
+          <a class="enlace bio" href="https://mgarper686.github.io/analisis6/esquemas-formales.pdf">
+            <span class="icono" aria-hidden="true">📄</span>
+            <span>
+              <strong>Apuntes</strong>
+              <span class="desc">Esquemas formales en PDF.</span>
+            </span>
+            <span class="flecha" aria-hidden="true">→</span>
+          </a>
+
+          <a class="enlace sonata" href="https://mgarper686.github.io/analisis6/periodos-clasicos">
+            <span class="icono" aria-hidden="true">▶</span>
+            <span>
+              <strong>Ejercicios interactivos</strong>
+              <span class="desc">17 fragmentos para analizar y clase en directo.</span>
+            </span>
+            <span class="flecha" aria-hidden="true">→</span>
+          </a>
+        </div>
+
+        <p class="nota">
+          Para la clase en directo: entra en los ejercicios, pulsa «Clase en directo» y escribe
+          tu nombre y el código de 4 cifras que te dé el profesor.
+        </p>
       </section>
 
     </main>
