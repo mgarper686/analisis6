@@ -906,7 +906,7 @@ function drawTeams(){const box=$('#s-teams');if(!box)return;const n=nTeams();box
   const cnt=Array(n).fill(0);S.st.pl.forEach(x=>{if(x[0]!==S.id&&x[4]!=null&&x[4]<n)cnt[x[4]]++});
   box.innerHTML=`<span class="lbl">Elige tu equipo</span><div class="tpick" role="radiogroup" aria-label="Equipo">${TEAMS.slice(0,n).map((t,i)=>`<button type="button" role="radio" aria-checked="${S.team===i}" style="--tc:${t[1]}" onclick="S.team=${i};drawTeams()">${t[0]}<small>${cnt[i]} ${cnt[i]==1?'persona':'personas'}</small></button>`).join('')}</div>`}
 function avCard(anim){const card=$('#s-card');if(!card)return;const k=S.av,f=INFO[k]||['',''];
-  card.innerHTML=`<div class="avbig">${avSVG(k,76)}${anim?'<i class="nt n1">♪</i><i class="nt n2">♫</i><i class="nt n3">♩</i><i class="nt n4">♬</i>':''}</div><div><b>${esc(avN(k))}</b><small>${f[0]}</small><p>${f[1]}</p></div>`;
+  card.innerHTML=`<div class="avbig">${avSVG(k,76)}</div><div><b>${esc(avN(k))}</b><small>${f[0]}</small><p>${f[1]}</p></div>`;
   if(anim){card.classList.remove('pop');void card.offsetWidth;card.classList.add('pop')}}
 function vJoin(){const A=$('#app');S.key='';
   A.innerHTML=`<div class="phone"><div><p class="eyebrow">Repaso de armonía</p><h1>Entra en la sala</h1></div>
