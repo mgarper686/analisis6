@@ -174,6 +174,7 @@
       color: var(--verde-osc);
     }
     .chip.periodo { background: #ffe9b8; color: #5a3d00; }
+    .chip.ud { background: var(--verde-osc); color: #fff; }
 
     .compositor > p {
       color: var(--tinta-suave);
@@ -230,30 +231,6 @@
     }
     .enlace:hover .flecha { transform: translateX(3px); }
 
-    .conceptos {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 0.9rem;
-      margin-bottom: 1.6rem;
-    }
-    .concepto {
-      background: var(--fondo);
-      border: 1px solid var(--linea);
-      border-radius: 12px;
-      padding: 0.9rem 1.1rem 1rem;
-    }
-    .concepto h3 {
-      font-family: 'Sora', sans-serif;
-      font-weight: 600;
-      font-size: 1rem;
-      line-height: 1.3;
-      margin-bottom: 0.25rem;
-    }
-    .concepto p {
-      color: var(--tinta-suave);
-      font-size: 0.97rem;
-      line-height: 1.45;
-    }
     .compositor > p.nota {
       margin: 1rem 0 0;
       font-size: 0.95rem;
@@ -298,8 +275,9 @@
       <nav aria-label="Navegación principal">
         <ul>
           <li><a href="https://mgarper686.github.io/">Inicio</a></li>
-          <li><a href="#scarlatti">Scarlatti</a></li>
-          <li><a href="#periodos">Períodos</a></li>
+          <li><a href="#scarlatti">UD 1 · Scarlatti</a></li>
+          <li><a href="#periodos">UD 2 · Períodos</a></li>
+          <li><a href="#repaso">Repaso</a></li>
           <li><a href="https://mgarper686.github.io/Mozart/">W. A. Mozart</a></li>
           <li><a href="https://mgarper686.github.io/Beethoven/">L. van Beethoven</a></li>
         </ul>
@@ -324,6 +302,7 @@
           <div>
             <h2>Domenico Scarlatti</h2>
             <div class="chips">
+              <span class="chip ud">UD 1</span>
               <span class="chip">1685 – 1757</span>
               <span class="chip periodo">Preclásico</span>
             </div>
@@ -374,6 +353,7 @@
           <div>
             <h2>Períodos clásicos</h2>
             <div class="chips">
+              <span class="chip ud">UD 2</span>
               <span class="chip">Estructura formal</span>
               <span class="chip periodo">Clasicismo</span>
             </div>
@@ -387,25 +367,6 @@
           especialmente habitual la frase de cuatro compases: un período de 8 compases se
           reparte en frases de 4 + 4 y semifrases de 2 + 2.
         </p>
-
-        <div class="conceptos">
-          <div class="concepto">
-            <h3>Antecedente y consecuente</h3>
-            <p>Pregunta y respuesta. El antecedente queda abierto, con un final suspensivo (por ejemplo, una semicadencia); el consecuente cierra con una cadencia conclusiva.</p>
-          </div>
-          <div class="concepto">
-            <h3>Cerrado o abierto</h3>
-            <p>Depende de la cadencia final: si es conclusiva, el período es cerrado; si es suspensiva, es abierto.</p>
-          </div>
-          <div class="concepto">
-            <h3>Binario, simétrico o asimétrico</h3>
-            <p>Un período binario tiene dos frases. Es simétrico si duran lo mismo (4 + 4, 8 + 8) y asimétrico si no, por ejemplo cuando hay una ampliación.</p>
-          </div>
-          <div class="concepto">
-            <h3>Ampliaciones</h3>
-            <p>Internas, si retrasan la cadencia con repeticiones o interpolaciones (suelen aparecer en el consecuente); externas, si llegan después de la cadencia, como una coda.</p>
-          </div>
-        </div>
 
         <div class="enlaces">
           <a class="enlace bio" href="https://mgarper686.github.io/analisis6/esquemas-formales.pdf">
@@ -431,6 +392,45 @@
           Para la clase en directo: entra en los ejercicios, pulsa «Clase en directo» y escribe
           tu nombre y el código de 4 cifras que te dé el profesor.
         </p>
+      </section>
+
+      <!-- Sección de tema: Repaso (dos actividades en clase virtual) -->
+      <section class="compositor" id="repaso">
+        <div class="compositor-cabecera">
+          <div class="inicial" aria-hidden="true">R</div>
+          <div>
+            <h2>Repaso de armonía</h2>
+            <div class="chips">
+              <span class="chip">Armonía</span>
+              <span class="chip periodo">Clase virtual</span>
+            </div>
+          </div>
+        </div>
+
+        <p>
+          Dos actividades para repasar en clase con todo el alumnado conectado a una misma
+          clase virtual: una de repaso y otra en forma de concurso, al estilo de Kahoot.
+        </p>
+
+        <div class="enlaces">
+          <a class="enlace bio" href="https://mgarper686.github.io/analisis6/repaso-armonia">
+            <span class="icono" aria-hidden="true">↻</span>
+            <span>
+              <strong>Repaso de armonía</strong>
+              <span class="desc">Cifrados, dominantes y dominantes secundarias en clase virtual.</span>
+            </span>
+            <span class="flecha" aria-hidden="true">→</span>
+          </a>
+
+          <a class="enlace sonata" href="https://mgarper686.github.io/analisis6/concurso-armonia">
+            <span class="icono" aria-hidden="true">★</span>
+            <span>
+              <strong>Concurso de armonía</strong>
+              <span class="desc">Lo mismo, en formato concurso tipo Kahoot.</span>
+            </span>
+            <span class="flecha" aria-hidden="true">→</span>
+          </a>
+        </div>
       </section>
 
     </main>
