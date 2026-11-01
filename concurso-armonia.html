@@ -748,7 +748,7 @@ const baseURL=()=>location.href.split('#')[0];
 
 /* ---------- si se recarga la pantalla del profe (F5), la sala se recupera tal como estaba ---------- */
 const HK=NS+'sala-profe';
-function hSave(){if(!H.code||H.ph=='conn'||H.ph=='fail')return;try{localStorage.setItem(HK,JSON.stringify({at:Date.now(),code:H.code,ph:H.ph,P:[...H.P],qs:H.qs,qi:H.qi,qid:H.qid,qStart:H.qStart||0,tl:H.tl||0,cfg:H.cfg,rej:H.rej,dist:H.dist||[],prevRank:H.prevRank||{},live:H.live,ended:H.ended||0,key:H.key||''}))}catch(e){}}
+function hSave(){if(!H.code||H.ph=='conn'||H.ph=='fail')return;try{sessionStorage.setItem(HK+'-tab',H.code)}catch(e){}try{localStorage.setItem(HK,JSON.stringify({at:Date.now(),code:H.code,ph:H.ph,P:[...H.P],qs:H.qs,qi:H.qi,qid:H.qid,qStart:H.qStart||0,tl:H.tl||0,cfg:H.cfg,rej:H.rej,dist:H.dist||[],prevRank:H.prevRank||{},live:H.live,ended:H.ended||0,key:H.key||''}))}catch(e){}}
 function hLoadSaved(){try{const s=JSON.parse(localStorage.getItem(HK)||'null');if(s&&s.code&&Date.now()-s.at<6*3600e3)return s}catch(e){}return null}
 function hForget(){try{localStorage.removeItem(HK)}catch(e){}}
 setInterval(()=>{if(H.cli)hSave()},15000);
@@ -762,11 +762,11 @@ function hostResume(){const s=hLoadSaved();if(!s){hostOpen();return}
     err=>{H.msg=err;H.ph='fail';hRender()},m=>{H.msg=m;if(H.ph=='conn')hRender()},{max:i})}
 function vHome(){$('#app').innerHTML=`<div class="home">
   <div><p class="eyebrow">Análisis musical · concurso en clase</p><h1>Concurso de armonía</h1></div>
-  <p class="lead">Las preguntas salen de los exámenes del acorde de dominante y de las dominantes secundarias, sin los acordes de novena. La pantalla de clase hace la pregunta y cada alumno o alumna responde desde su móvil, solo o por equipos.</p>
+  <p class="lead">Las preguntas salen de los exámenes del acorde de dominante y de las dominantes secundarias, sin los acordes de novena. La pantalla de clase hace la pregunta y cada alumno o alumna responde desde su móvil o su ordenador, solo o por equipos.</p>
   ${resumeCard()}
   <div class="roles">
     <div class="card role"><h2>🖥️ Pantalla de clase</h2><p>Para el ordenador del proyector. Abre la sala, muestra el QR y dirige el concurso.</p><button class="btn primary big" onclick="hostOpen()">Abrir sala</button></div>
-    <div class="card role"><h2>📱 Soy alumno/a</h2><p>Si has escaneado el QR ya estás aquí. Elige compositor, escribe tu nombre y entra.</p><button class="btn big" onclick="studentStart('')">Entrar con el móvil</button></div>
+    <div class="card role"><h2>📱💻 Soy alumno/a</h2><p>Desde el móvil (escaneando el QR) o desde el ordenador (con el código de la sala). Elige compositor, escribe tu nombre y entra.</p><button class="btn big" onclick="studentStart('')">Entrar como alumno/a</button></div>
   </div><div class="row"><button class="btn ghost" onclick="remoteForm()">🔑 Mando del profe</button><span class="muted" style="font-size:.9rem">Para ver en tu móvil la respuesta correcta y controlar la sala.</span></div></div>`}
 
 /* ================= PANTALLA DE CLASE ================= */
@@ -822,7 +822,7 @@ function closeQ(){if(H.ph!=='q')return;const q=H.qs[H.qi];H.prevRank=rankMap();H
 function showRank(){H.ph='rank';hRender();hPubNow()}
 function finish(){H.ph='end';hRender();hPubNow()}
 function backLobby(){H.ph='lobby';H.qs=[];H.qi=-1;H.qid='';H.ended=0;H.P.forEach(p=>{p.score=0;p.streak=0;p.ans={};p.last=null;p.hist=[]});hRender();hPubNow()}
-function closeRoom(){hForget();musStop();MUS.ph=null;clearInterval(H.tick);try{H.cli.publish(T(H.code).host,'',{retain:true});setTimeout(()=>{try{H.cli.end(true)}catch(e){}},400)}catch(e){}H.cli=null;H.P.clear();H.ph='conn';location.hash='';vHome()}
+function closeRoom(){try{sessionStorage.removeItem(HK+'-tab')}catch(e){}hForget();musStop();MUS.ph=null;clearInterval(H.tick);try{H.cli.publish(T(H.code).host,'',{retain:true});setTimeout(()=>{try{H.cli.end(true)}catch(e){}},400)}catch(e){}H.cli=null;H.P.clear();H.ph='conn';location.hash='';vHome()}
 function hearQ(){const q=H.qs[H.qi];if(q)playChord(qNotes(q))}
 const joinURL=()=>baseURL()+'#c'+H.code;
 const chip=(id,p,mv)=>`<span class="pchip"${mv?` role="button" tabindex="0" title="Cambiar de equipo" onclick="moveP('${id}')"`:''}>${avSVG(p.av,40)}<span>${esc(p.name)}<br><small>${esc(avN(p.av))}</small></span></span>`;
@@ -841,7 +841,7 @@ function hRender(){const A=$('#app');document.body.classList.add('host');setTime
   const fs=`<div class="tools">${endBtn()}${xlsBtn()}${remoteBtn()}<button class="btn ghost" id="musb" onclick="togMus()">${MUS.on?'🎵 Música: sí':'🔇 Música: no'}</button>${H.ph!="lobby"?`<button class="btn ghost" onclick="showQR()">📱 QR para entrar</button>`:""}<button class="btn ghost" onclick="togFS()">⛶ Pantalla completa</button></div>`;
   if(H.ph=='lobby'){const url=joinURL(),seg=(k,list)=>`<div class="seg">${list.map(([v,t])=>`<button class="segb ${H.cfg[k]==v?'on':''}" onclick="setCfg('${k}',${typeof v=='string'?`'${v}'`:v})">${t}</button>`).join('')}</div>`;
     A.innerHTML=fs+`<div class="lobby">
-    <section class="card join"><p class="eyebrow">Entrad con el móvil</p><div class="qr">${qrSVG(url)}</div><p class="url">${esc(url.replace(/^https?:\/\//,''))}</p>
+    <section class="card join"><p class="eyebrow">Entrad con el móvil o el ordenador</p><div class="qr">${qrSVG(url)}</div><p class="url">${esc(url.replace(/^https?:\/\//,''))}</p>
       <div class="bigcode">${H.code}</div><p class="muted" style="margin:0">Código de la sala</p>
       ${location.protocol=='file:'?'<p class="warn">Has abierto la página desde un archivo de tu ordenador: los móviles no podrán abrir esta dirección. Publícala en internet (por ejemplo, en GitHub Pages) y abre la sala desde allí.</p>':''}</section>
     <section class="setup"><h1 class="title">Concurso de armonía<small>Escanead el QR, elegid compositor/a y escribid vuestro nombre.</small></h1>
@@ -1002,8 +1002,14 @@ function drawBuild(){const q=S.st.q,el=$('#build');if(!el)return;sSave();const k
   el.querySelectorAll('[data-p]').forEach(g=>g.addEventListener('click',()=>{const id=+g.dataset.p,n=q.P[id];if(S.pl[n.s]===id)delete S.pl[n.s];drawBuild()}))}
 function sSendBuild(){if(S.sent||S.out)return;const a=Object.values(S.pl).map(Number);if(!a.length)return;S.sent=true;sPub({t:'ans',qid:S.qid,a,h:S.hint?1:0});S.key='';sOnState(S.st)}
 
+
+/* en el ordenador también se puede responder con el teclado: 1-6 para las opciones, Intro para enviar */
+document.addEventListener('keydown',e=>{if(e.target&&/INPUT|TEXTAREA/.test(e.target.tagName))return;if(!S.joined||!S.st||S.st.ph!=='q'||S.sent)return;const q=S.st.q;if(!q||isBuild(q))return;
+  const n=parseInt(e.key,10);if(n>=1&&n<=6){const o=qOpts(q);if(n<=o.length){e.preventDefault();typeof sPick=='function'?sPick(n-1):sAns(n-1)}}else if(e.key==='Enter'&&typeof sSend=='function'&&S.sel!=null){e.preventDefault();sSend()}});
+/* si se cambia el código en la barra de direcciones, la página se vuelve a cargar con él */
+window.addEventListener('hashchange',()=>location.reload());
 /* ---------- arranque ---------- */
-setTimeout(function(){const h=location.hash;const m=h.match(/^#c([1-3]\d{3})$/);if(m)studentStart(m[1]);else if(h==='#alumno')studentStart('');else if(/^#p[1-3]\d{3}-[a-z0-9]{4,8}$/.test(h))remoteStart(h.slice(2,6),h.slice(7));else if(h==='#profe')remoteForm();else{const sv=hLoadSaved();if(sv&&Date.now()-sv.at<10*60e3)hostResume();else vHome()}},0);
+setTimeout(function(){const h=location.hash;const m=h.match(/^#c([1-3]\d{3})$/);if(m)studentStart(m[1]);else if(h==='#alumno')studentStart('');else if(/^#p[1-3]\d{3}-[a-z0-9]{4,8}$/.test(h))remoteStart(h.slice(2,6),h.slice(7));else if(h==='#profe')remoteForm();else{const sv=hLoadSaved();let mine=false;try{mine=sessionStorage.getItem(HK+'-tab')===(sv&&sv.code)}catch(e){}if(sv&&mine)hostResume();else vHome()}},0);
 
 /* ================= música de concurso: adaptaciones de obras clásicas =================
    Instrumentos: muestras reales de piano y de cuerda (las del examen de dominantes secundarias) + percusión sintetizada + reverberación de sala.
@@ -1175,11 +1181,12 @@ function hKey(){if(!H.key)H.key=Math.random().toString(36).slice(2,8);return H.k
 const remoteURL=()=>baseURL()+'#p'+H.code+'-'+hKey();
 function showRemote(){let o=$('#qrov');if(o){o.remove();return}o=document.createElement('div');o.id='qrov';o.className='qrov';o.setAttribute('role','dialog');o.setAttribute('aria-label','Móvil del profe');
   o.innerHTML=`<div class="card join"><p class="eyebrow">🔑 Móvil del profe</p><p style="margin:0">Con este QR tu móvil ve la respuesta correcta de cada pregunta y puede corregir, pasar a la siguiente y terminar.</p>
-    <div class="qr blurred" id="rqr">${qrSVG(remoteURL())}<button class="btn primary" onclick="this.parentNode.classList.remove('blurred');document.getElementById('rkey').hidden=false;this.remove()">Mostrar el QR y la clave</button></div>
+    <div class="qr blurred" id="rqr">${qrSVG(remoteURL())}<button class="btn primary" onclick="this.parentNode.classList.remove('blurred');document.getElementById('rkey').hidden=false;document.getElementById('rkey').style.display='grid';this.remove()">Mostrar el QR y la clave</button></div>
     <p class="warn" style="margin:0">Los alumnos no deben verlo: congela o apaga el proyector antes de pulsar «Mostrar».</p>
-    <p class="muted" id="rkey" hidden style="margin:0">También puedes entrar en la página desde tu móvil, pulsar «🔑 Mando del profe» y escribir:<br>sala <b>${H.code}</b> · clave <b class="mono">${hKey()}</b></p>
+    <div id="rkey" hidden style="gap:6px"><p class="muted" style="margin:0">Desde otro ordenador o tableta: entra en la página, pulsa «🔑 Mando del profe» y escribe sala <b>${H.code}</b> · clave <b class="mono">${hKey()}</b></p><p style="margin:0"><a class="btn" href="${remoteURL()}" target="_blank" rel="noopener">Abrir el mando en otra pestaña</a> <button class="btn ghost" onclick="copyRemote(this)">Copiar el enlace</button></p></div>
     <button class="btn" onclick="showRemote()">Cerrar</button></div>`;
   o.addEventListener('click',e=>{if(e.target===o)o.remove()});document.body.appendChild(o)}
+function copyRemote(b){const u=remoteURL();const ok=()=>{b.textContent='Enlace copiado ✔'};try{navigator.clipboard.writeText(u).then(ok,()=>prompt('Copia este enlace:',u))}catch(e){prompt('Copia este enlace:',u)}}
 const remoteBtn=()=>H.code&&H.ph!='conn'&&H.ph!='fail'?`<button class="btn ghost" onclick="showRemote()">🔑 Móvil del profe</button>`:'';
 function endDo(){if(!['q','reveal','rank'].includes(H.ph))return;if(H.ph=='q'){if(typeof closeQ=='function')closeQ();else correct()}H.ended=H.qi+1;finish()}
 function hCtl(c){const last=H.qi+1>=H.qs.length,cq=typeof closeQ=='function';
