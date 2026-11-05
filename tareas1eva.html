@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Tu ruta hasta diciembre · Análisis y Armonía</title>
+<title>Tu plan hasta diciembre · Análisis y Armonía</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#f4f1ff;--bg2:#e8e1ff;--card:#fff;--ink:#1b1340;--mut:#5c5683;--pk:#e0246f;--cy:#0a9fc4;--li:#5aa000;--vi:#6d3df0;--line:#ddd5fa;--glow:0 10px 30px rgba(109,61,240,.15);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -96,7 +96,7 @@ body{margin:0;font-family:Poppins,Arial,sans-serif;color:var(--ink);line-height:
 <body><div class="w">
 
 <header class="hero"><small>ANÁLISIS + ARMONÍA · 1.ª EVALUACIÓN</small>
-<h1>Tu ruta hasta <span>diciembre</span></h1>
+<h1>Tu plan hasta <span>diciembre</span></h1>
 <p>Tres fechas, siete misiones. Pulsa los botones y vas directo a Moodle.</p><div class="hint">📍 Pulsa «Dónde está en Moodle» en cada tarea y una flecha te lo señala</div></header>
 
 <div class="road">
@@ -162,7 +162,7 @@ body{margin:0;font-family:Poppins,Arial,sans-serif;color:var(--ink);line-height:
 <div class="ft">¿Te pierdes con las fechas? Mira el <a href="https://educacionadistancia.juntadeandalucia.es/centros/huelva/mod/scorm/view.php?id=174959">planning de tareas</a>.</div>
 </div>
 <script>
-(function(){function f(m,d,id){var x=Math.ceil((new Date(2026,m,d,23,59)-new Date())/864e5),e=document.getElementById(id);if(e)e.textContent=x>1?"⏳ "+x+" días":x==1?"⏳ ¡Queda 1 día!":x==0?"⏳ ¡Hoy!":"Plazo cerrado"}
+(function(){function f(m,d,id){var n=new Date(),x=Math.round((new Date(2026,m,d)-new Date(n.getFullYear(),n.getMonth(),n.getDate()))/864e5),e=document.getElementById(id);if(e)e.textContent=x>1?"⏳ Quedan "+x+" días":x==1?"⏳ ¡Queda 1 día!":x==0?"⏳ ¡Último día: hoy!":"Plazo cerrado"}
 f(10,17,"c1");f(10,18,"c2");f(11,1,"c3")})();
 </script>
 
