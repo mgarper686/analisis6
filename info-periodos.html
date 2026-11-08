@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clase en directo · Períodos clásicos</title>
+  <meta name="description" content="Cómo participar en la clase en directo de períodos clásicos: lo que tienes que hacer en cada momento.">
+  <meta name="author" content="Miguel García Pérez">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Sora:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --verde-osc: #0f3d3e;
+      --verde: #1c7c7d;
+      --verde-claro: #d5ece8;
+      --naranja: #ff8a4c;
+      --naranja-osc: #f0722f;
+      --amarillo: #ffd166;
+      --morado: #8e6bd1;
+      --fondo: #f4f7f6;
+      --tinta: #12292a;
+      --tinta-suave: #4a6061;
+      --linea: #dce5e3;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; background: var(--fondo); }
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      font-size: 1.1rem;
+      line-height: 1.6;
+      color: var(--tinta);
+      background: var(--fondo);
+    }
+    a, button { font: inherit; }
+    a:focus-visible, button:focus-visible, input:focus-visible {
+      outline: 3px solid var(--naranja);
+      outline-offset: 3px;
+    }
+
+    /* ---------- CABECERA ---------- */
+    .cabecera {
+      background: var(--verde-osc);
+      color: #f3f7f5;
+      padding: 1.6rem 1.25rem 2.2rem;
+    }
+    .cabecera-in { max-width: 1000px; margin: 0 auto; }
+    .volver {
+      display: inline-block;
+      color: #b9d9d3;
+      text-decoration: none;
+      font-size: 0.95rem;
+      margin-bottom: 1.2rem;
+    }
+    .volver:hover { color: var(--amarillo); }
+    .etiqueta-sup {
+      display: inline-block;
+      font-weight: 700;
+      font-size: 0.9rem;
+      background: var(--amarillo);
+      color: var(--verde-osc);
+      border-radius: 999px;
+      padding: 0.15rem 0.9rem;
+    }
+    h1 {
+      font-family: 'Sora', sans-serif;
+      font-size: clamp(2rem, 5vw, 3rem);
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      margin-top: 0.7rem;
+    }
+    .lema { color: #b9d9d3; margin-top: 0.6rem; }
+
+    main { max-width: 1000px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+    h2 {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.5rem;
+      letter-spacing: -0.02em;
+      margin: 2.4rem 0 1rem;
+    }
+    h2:first-child { margin-top: 0; }
+
+    /* ---------- PASOS: NAVEGADOR ---------- */
+    .barra-pasos {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+    .puntos { display: flex; gap: 0.4rem; flex-wrap: wrap; list-style: none; }
+    .punto {
+      width: 42px; height: 42px;
+      border-radius: 12px;
+      border: 2px solid var(--linea);
+      background: #fff;
+      color: var(--tinta);
+      font-family: 'Sora', sans-serif;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .punto:hover { border-color: var(--verde); }
+    .punto.visto { background: var(--verde-claro); border-color: var(--verde-claro); }
+    .punto[aria-current="step"] { background: var(--naranja); border-color: var(--naranja); color: var(--verde-osc); }
+    .ver-todos {
+      border: 2px solid var(--verde);
+      background: transparent;
+      color: var(--verde);
+      font-weight: 700;
+      border-radius: 999px;
+      padding: 0.35rem 1rem;
+      cursor: pointer;
+    }
+    .ver-todos:hover { background: var(--verde); color: #fff; }
+
+    .progreso { height: 6px; background: var(--linea); border-radius: 99px; overflow: hidden; margin-bottom: 1.2rem; }
+    .progreso span { display: block; height: 100%; background: var(--naranja); width: 0; transition: width 0.25s; }
+
+    /* ---------- TARJETA DE PASO ---------- */
+    .pasos { display: grid; gap: 1.2rem; }
+    .paso {
+      display: none;
+      background: #fff;
+      border: 1px solid var(--linea);
+      border-radius: 18px;
+      padding: 1.8rem 2rem;
+    }
+    .paso.activo { display: block; animation: entra 0.25s ease; }
+    .todos .paso { display: block; animation: none; }
+    @keyframes entra { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+    .paso-cab { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
+    .paso-num {
+      flex-shrink: 0;
+      width: 68px; height: 68px;
+      display: grid; place-items: center;
+      background: var(--naranja);
+      border-radius: 18px;
+      font-size: 2rem;
+      position: relative;
+    }
+    .paso-num b {
+      position: absolute;
+      bottom: -8px; right: -8px;
+      width: 28px; height: 28px;
+      display: grid; place-items: center;
+      background: var(--verde-osc);
+      color: #fff;
+      border-radius: 50%;
+      font-family: 'Sora', sans-serif;
+      font-size: 0.9rem;
+    }
+    .paso h3 {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.6rem;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+    }
+    .paso p { color: var(--tinta-suave); max-width: 62ch; }
+    .paso p + p, .paso p + .extra, .paso .extra + p { margin-top: 0.8rem; }
+
+    .boton-demo {
+      display: inline-block;
+      background: var(--verde-osc);
+      color: #fff;
+      border-radius: 8px;
+      padding: 0 0.5rem;
+      font-weight: 700;
+      font-size: 0.95em;
+      white-space: nowrap;
+    }
+
+    .extra {
+      margin-top: 1rem;
+      padding: 1rem 1.2rem;
+      background: var(--fondo);
+      border-radius: 12px;
+    }
+
+    /* Demo de colores (paso 5) */
+    .recuadros { display: flex; gap: 0.6rem; flex-wrap: wrap; margin: 0.6rem 0 1rem; }
+    .recuadro {
+      padding: 0.5rem 0.9rem;
+      border-radius: 8px;
+      border: 3px solid;
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+    .recuadro.ant { border-color: #e6b400; background: rgba(255, 209, 102, 0.25); }
+    .recuadro.con { border-color: var(--morado); background: rgba(142, 107, 209, 0.15); }
+    .etiquetas { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .etiqueta {
+      background: #fff;
+      border: 2px dashed var(--verde);
+      color: var(--verde-osc);
+      border-radius: 8px;
+      padding: 0.25rem 0.7rem;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: grab;
+      user-select: none;
+    }
+    .etiqueta:active { cursor: grabbing; }
+    .pentagrama {
+      margin-top: 0.8rem;
+      min-height: 70px;
+      border-radius: 10px;
+      background:
+        repeating-linear-gradient(to bottom, transparent 0 11px, #c7d3d1 11px 12px) 0 10px / 100% 60px no-repeat,
+        #fff;
+      border: 1px solid var(--linea);
+      display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: flex-start;
+      padding: 0.5rem;
+      transition: background-color 0.15s;
+    }
+    .pentagrama.sobre { outline: 3px dashed var(--naranja); }
+    .pentagrama .vacio { color: var(--tinta-suave); font-size: 0.9rem; background: #fff; padding: 0 0.3rem; }
+
+    /* Demo de parejas (paso 9) */
+    .parejas { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.6rem; margin-top: 0.8rem; }
+    .pareja { display: flex; border-radius: 10px; overflow: hidden; border: 2px solid var(--linea); }
+    .pareja button {
+      flex: 1;
+      border: 0;
+      background: #fff;
+      padding: 0.45rem 0.4rem;
+      cursor: pointer;
+      font-size: 0.95rem;
+      color: var(--tinta);
+    }
+    .pareja button + button { border-left: 2px solid var(--linea); }
+    .pareja button[aria-pressed="true"] { background: var(--verde); color: #fff; font-weight: 700; }
+
+    .nav-paso { display: flex; justify-content: space-between; gap: 1rem; margin-top: 1.6rem; }
+    .todos .nav-paso { display: none; }
+    .nav-paso button {
+      border: 0;
+      border-radius: 12px;
+      padding: 0.7rem 1.3rem;
+      font-weight: 700;
+      cursor: pointer;
+      background: var(--naranja);
+      color: var(--verde-osc);
+    }
+    .nav-paso button:hover { background: var(--naranja-osc); }
+    .nav-paso button.sec { background: var(--verde-claro); }
+    .nav-paso button.sec:hover { background: #bfe0da; }
+    .nav-paso button:disabled { visibility: hidden; }
+    .pista-teclado { font-size: 0.9rem; color: var(--tinta-suave); margin-top: 0.6rem; }
+    .todos ~ .pista-teclado { display: none; }
+
+    /* ---------- CONSEJOS ---------- */
+    .consejos { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 0.9rem; }
+    .consejo {
+      background: var(--verde-osc);
+      color: #f3f7f5;
+      border-radius: 14px;
+      padding: 1.1rem 1.2rem;
+    }
+    .consejo strong { display: block; font-family: 'Sora', sans-serif; font-size: 1.05rem; margin-bottom: 0.3rem; }
+    .consejo p { color: #cfe6e1; font-size: 0.98rem; line-height: 1.45; }
+    .consejo .ic { font-size: 1.6rem; display: block; margin-bottom: 0.3rem; }
+    .consejo .mini { display: inline-block; background: rgba(255,255,255,0.15); border-radius: 6px; padding: 0 0.4rem; color: #fff; }
+
+    /* ---------- NOTAS ---------- */
+    .notas {
+      background: #fff;
+      border: 1px solid var(--linea);
+      border-radius: 18px;
+      padding: 1.8rem 2rem;
+    }
+    .formula {
+      font-family: 'Sora', sans-serif;
+      font-weight: 600;
+      font-size: 1.15rem;
+      background: var(--amarillo);
+      color: var(--verde-osc);
+      border-radius: 12px;
+      padding: 0.8rem 1.1rem;
+      margin-bottom: 1.2rem;
+    }
+    .calc { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.2rem; align-items: end; }
+    .calc label { display: block; font-weight: 700; font-size: 0.95rem; margin-bottom: 0.3rem; }
+    .calc input[type=range] { width: 100%; accent-color: var(--verde); }
+    .calc output { font-family: 'Sora', sans-serif; font-weight: 700; }
+    .resultado {
+      background: var(--verde-osc);
+      color: #fff;
+      border-radius: 14px;
+      padding: 0.9rem 1.1rem;
+      text-align: center;
+    }
+    .resultado span { display: block; font-size: 0.9rem; color: #b9d9d3; }
+    .resultado output { font-size: 2.2rem; line-height: 1.1; }
+    .lista-notas { list-style: none; margin-top: 1.4rem; display: grid; gap: 0.8rem; }
+    .lista-notas li { display: flex; gap: 0.8rem; color: var(--tinta-suave); }
+    .lista-notas li > span:first-child { font-size: 1.4rem; line-height: 1.3; }
+    .lista-notas strong { color: var(--tinta); }
+
+    .cta {
+      display: flex; align-items: center; gap: 0.9rem;
+      margin-top: 2.4rem;
+      text-decoration: none;
+      padding: 1rem 1.3rem;
+      border-radius: 12px;
+      background: var(--verde);
+      color: #fff;
+      max-width: 460px;
+    }
+    .cta:hover { background: var(--verde-osc); }
+    .cta strong { display: block; font-family: 'Sora', sans-serif; }
+    .cta .flecha { margin-left: auto; font-size: 1.2rem; }
+
+    footer { text-align: center; color: var(--tinta-suave); font-size: 0.9rem; padding: 0 1.25rem 2rem; }
+
+    @media (max-width: 600px) {
+      .paso, .notas { padding: 1.4rem 1.2rem; }
+      .paso h3 { font-size: 1.35rem; }
+      .paso-num { width: 56px; height: 56px; font-size: 1.6rem; }
+      .punto { width: 36px; height: 36px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .paso.activo { animation: none; }
+      .progreso span { transition: none; }
+    }
+    @media print {
+      .cabecera { background: none; color: var(--tinta); padding-bottom: 0; }
+      .volver, .barra-pasos, .progreso, .nav-paso, .pista-teclado, .cta { display: none !important; }
+      .paso { display: block !important; break-inside: avoid; }
+      .consejo { background: var(--verde-claro); color: var(--tinta); }
+      .consejo p { color: var(--tinta-suave); }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="cabecera">
+    <div class="cabecera-in">
+      <a class="volver" href="https://mgarper686.github.io/analisis6/#periodos">← Volver a Análisis musical</a><br>
+      <span class="etiqueta-sup">Períodos clásicos · UD 2</span>
+      <h1>Clase en directo:<br>cómo participar</h1>
+      <p class="lema">Lo que tienes que hacer en cada momento</p>
+    </div>
+  </header>
+
+  <main>
+
+    <h2>Paso a paso</h2>
+
+    <div class="barra-pasos">
+      <ol class="puntos" id="puntos" aria-label="Pasos"></ol>
+      <button class="ver-todos" id="verTodos" aria-pressed="false">Ver todos los pasos</button>
+    </div>
+    <div class="progreso" aria-hidden="true"><span id="barra"></span></div>
+
+    <div class="pasos" id="pasos">
+
+      <article class="paso" data-titulo="Entra">
+        <div class="paso-cab">
+          <div class="paso-num" aria-hidden="true">📱<b>1</b></div>
+          <h3>Entra</h3>
+        </div>
+        <p>Escanea el QR que enseña el profe en clase: te lleva directamente a la página.</p>
+        <p>Desde el ordenador: entra en la página, pulsa <span class="boton-demo">Unirme a la clase</span> y escribe el <strong>código de 4 cifras</strong>.</p>
+      </article>
+
+      <article class="paso" data-titulo="Di quién eres">
+        <div class="paso-cab">
+          <div class="paso-num" aria-hidden="true">🙋<b>2</b></div>
+          <h3>Di quién eres</h3>
+        </div>
+        <p>Escribe tu nombre y, si sale la lista, elige el tuyo. <strong>Usa siempre el mismo</strong>: ahí se guardan tus notas.</p>
+        <p>Después, elige un compositor o compositora.</p>
+      </article>
+
+      <article class="paso" data-titulo="¿Compositor repetido?">
+        <div class="paso-cab">
+          <div class="paso-num" aria-hidden="true">⚔️<b>3</b></div>
+          <h3>¿Compositor repetido?</h3>
+        </div>
+        <p>Si alguien más eligió el mismo, sale una pregunta sobre él o ella.</p>
+        <p><strong>Quien acierta antes se lo queda</strong>; quien pierde elige otro distinto.</p>
+      </article>
+
+      <article class="paso" data-titulo="Escucha">
+        <div class="paso-cab">
+          <div class="paso-num" aria-hidden="true">🎧<b>4</b></div>
+          <h3>Escucha</h3>
+        </div>
+        <p>Verás la partitura en blanco. La música la pone el profe.</p>
+        <p>Fíjate en las <strong>frases</strong>, las <strong>semifrases</strong>, las <strong>cadencias</strong>…</p>
+      </article>
+
+      <article class="paso" data-titulo="Colorea (con permiso)">
+        <div class="paso-cab">
+          <div class="paso-num" aria-hidden="true">✏️<b>5</b></div>
+          <h3>Colorea (con permiso)</h3>
+        </div>
+        <p>Solo cuando el profe dé permiso. Marca cada semifrase con su recuadro y pon el nombre de cada frase (el corchete es opcional).</p>
+        <div class="extra">
+          <div class="recuadros">
+            <span class="recuadro ant">Amarillo · semifrase antecedente</span>
+            <span class="recuadro con">Morado · semifrase consecuente</span>
+          </div>
+          <p><strong>Pruébalo:</strong> arrastra los nombres al pentagrama (o tócalos en el móvil).</p>
+          <div class="etiquetas" id="etiquetas">
+            <span class="etiqueta" draggable="true">FRASE ANTECEDENTE</span>
+            <span class="etiqueta" draggable="true">FRASE CONSECUENTE</span>
+            <span class="etiqueta" draggable="true">Ampliación interna</span>
+          </div>
+          <div class="pentagrama" id="pentagrama" aria-label="Pentagrama de prueba">
+            <span class="vacio">Suelta aquí los nombres</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="paso" data-titulo="Envía">
+        <div class="paso-cab">
+          <div class="paso-num" aria-hidden="true">📤<b>6</b></div>
+          <h3>Envía</h3>
+        </div>
+        <p>Pulsa <span class="boton-demo">📤 Enviar</span>. <strong>Ya no podrás cambiar nada</strong>, así que revisa antes.</p>
+        <p>Espera a que el profe corrija.</p>
+      </article>
+
+      <article class="paso" data-titulo="Nota de la estructura">
+        <div class="paso-cab">
+          <div class="paso-num" aria-hidden="true">✅<b>7</b></div>
+          <h3>Nota de la estructura</h3>
+        </div>
+        <p>Sale tu nota sobre 10: frases, semifrases y ampliaciones.</p>
+        <p>Cuenta que el nombre esté <strong>en su tramo</strong>, aunque no esté en el pentagrama exacto.</p>
+      </article>
+
+      <article class="paso" data-titulo="Sigue al profe">
+        <div class="paso-cab">
+          <div class="paso-num" aria-hidden="true">👀<b>8</b></div>
+          <h3>Sigue al profe</h3>
+        </div>
+        <p>Tu pantalla se limpia y el análisis aparece a la vez que suena.</p>
+        <p>Puedes guardarlo con <span class="boton-demo">⬇ PDF</span> o <span class="boton-demo">⬇ JPG</span>.</p>
+      </article>
+
+      <article class="paso" data-titulo="Describe el periodo">
+        <div class="paso-cab">
+          <div class="paso-num" aria-hidden="true">❓<b>9</b></div>
+          <h3>Describe el periodo</h3>
+        </div>
+        <p>Elige una opción de cada pareja. Cada acierto vale <strong>2,5 puntos</strong>. Al corregir verás ✓ en lo que está bien y tachado lo que está mal.</p>
+        <div class="extra">
+          <p><strong>Así se ve</strong> (prueba a elegir):</p>
+          <div class="parejas" id="parejas">
+            <div class="pareja"><button aria-pressed="false">binario</button><button aria-pressed="false">ternario</button></div>
+            <div class="pareja"><button aria-pressed="false">paralelo</button><button aria-pressed="false">contrastante</button></div>
+            <div class="pareja"><button aria-pressed="false">simétrico</button><button aria-pressed="false">asimétrico</button></div>
+            <div class="pareja"><button aria-pressed="false">abierto</button><button aria-pressed="false">cerrado</button></div>
+          </div>
+        </div>
+      </article>
+
+    </div>
+
+    <div class="nav-paso" id="navPaso">
+      <button class="sec" id="anterior">← Anterior</button>
+      <button id="siguiente">Siguiente →</button>
+    </div>
+    <p class="pista-teclado">También puedes pasar de paso con las flechas ← → del teclado.</p>
+
+    <h2>Si algo falla</h2>
+    <div class="consejos">
+      <div class="consejo">
+        <span class="ic" aria-hidden="true">🔄</span>
+        <strong>¿Sin señal?</strong>
+        <p>Pulsa <span class="mini">🔄</span> en tu barra: vuelve a pedir el estado de la clase.</p>
+      </div>
+      <div class="consejo">
+        <span class="ic" aria-hidden="true">↻</span>
+        <strong>¿Recargas (F5)?</strong>
+        <p>No pierdes nada: vuelves a la clase con lo que llevabas.</p>
+      </div>
+      <div class="consejo">
+        <span class="ic" aria-hidden="true">📌</span>
+        <strong>En el móvil</strong>
+        <p>Con «Partitura fija» activado, no se mueve al dibujar. Para moverla, usa <span class="mini">✋ Desplazar</span>.</p>
+      </div>
+      <div class="consejo">
+        <span class="ic" aria-hidden="true">🔇</span>
+        <strong>Sin audio</strong>
+        <p>En clase solo suena en el ordenador del profe. Para practicar en casa: contraseña de práctica.</p>
+      </div>
+    </div>
+
+    <h2>Tus notas</h2>
+    <section class="notas">
+      <p class="formula">🏁 Nota final del periodo = media de estructura y descripción</p>
+
+      <div class="calc">
+        <div>
+          <label for="estructura">Nota de la estructura: <output id="oEstructura">7</output></label>
+          <input type="range" id="estructura" min="0" max="10" step="0.5" value="7">
+        </div>
+        <div>
+          <label for="aciertos">Parejas acertadas: <output id="oAciertos">3</output> de 4 (<output id="oDescripcion">7,5</output>)</label>
+          <input type="range" id="aciertos" min="0" max="4" step="1" value="3">
+        </div>
+        <div class="resultado" aria-live="polite">
+          <span>Nota final del periodo</span>
+          <output id="oFinal">7,25</output>
+        </div>
+      </div>
+
+      <ul class="lista-notas">
+        <li><span aria-hidden="true">➕</span><span><strong>Tus notas se van sumando</strong> periodo a periodo. Si faltas a uno, ese cuenta 0.</span></li>
+        <li><span aria-hidden="true">📒</span><span>En <strong>Mis notas</strong> ves cada nota, la suma y la media, y puedes repasar tus respuestas.</span></li>
+        <li><span aria-hidden="true">🏆</span><span>Pulsa <strong>Ranking</strong> en cualquier momento: verás tu posición (p. ej. «3º de 24 · 41,5 puntos») y la de toda la clase, ordenada por la suma.</span></li>
+      </ul>
+    </section>
+
+    <a class="cta" href="https://mgarper686.github.io/analisis6/periodos-clasicos">
+      <span aria-hidden="true">▶</span>
+      <span><strong>Ir a los ejercicios</strong>Entrar en la clase en directo</span>
+      <span class="flecha" aria-hidden="true">→</span>
+    </a>
+
+  </main>
+
+  <footer>Contenidos elaborados por el profesor Miguel García Pérez</footer>
+
+  <script>
+    (function () {
+      var pasos = Array.prototype.slice.call(document.querySelectorAll('.paso'));
+      var cont = document.getElementById('pasos');
+      var puntos = document.getElementById('puntos');
+      var barra = document.getElementById('barra');
+      var ant = document.getElementById('anterior');
+      var sig = document.getElementById('siguiente');
+      var verTodos = document.getElementById('verTodos');
+      var actual = 0;
+      var botones = [];
+
+      pasos.forEach(function (p, i) {
+        var li = document.createElement('li');
+        var b = document.createElement('button');
+        b.className = 'punto';
+        b.textContent = i + 1;
+        b.title = p.dataset.titulo;
+        b.setAttribute('aria-label', 'Paso ' + (i + 1) + ': ' + p.dataset.titulo);
+        b.addEventListener('click', function () {
+          if (cont.classList.contains('todos')) {
+            p.scrollIntoView({ block: 'start' });
+          } else {
+            ir(i);
+          }
+        });
+        li.appendChild(b);
+        puntos.appendChild(li);
+        botones.push(b);
+      });
+
+      function ir(i) {
+        actual = Math.max(0, Math.min(pasos.length - 1, i));
+        pasos.forEach(function (p, j) { p.classList.toggle('activo', j === actual); });
+        botones.forEach(function (b, j) {
+          if (j === actual) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current');
+          if (j < actual) b.classList.add('visto');
+        });
+        barra.style.width = ((actual + 1) / pasos.length * 100) + '%';
+        ant.disabled = actual === 0;
+        sig.disabled = actual === pasos.length - 1;
+        try { history.replaceState(null, '', '#paso-' + (actual + 1)); } catch (e) {}
+      }
+
+      ant.addEventListener('click', function () { ir(actual - 1); });
+      sig.addEventListener('click', function () { ir(actual + 1); });
+      document.addEventListener('keydown', function (e) {
+        if (cont.classList.contains('todos')) return;
+        if (e.target.tagName === 'INPUT') return;
+        if (e.key === 'ArrowRight') ir(actual + 1);
+        if (e.key === 'ArrowLeft') ir(actual - 1);
+      });
+
+      verTodos.addEventListener('click', function () {
+        var on = cont.classList.toggle('todos');
+        verTodos.setAttribute('aria-pressed', on);
+        verTodos.textContent = on ? 'Ver paso a paso' : 'Ver todos los pasos';
+        document.getElementById('navPaso').style.display = on ? 'none' : '';
+        barra.style.width = on ? '100%' : ((actual + 1) / pasos.length * 100) + '%';
+      });
+
+      var m = location.hash.match(/^#paso-(\d+)$/);
+      ir(m ? parseInt(m[1], 10) - 1 : 0);
+
+      /* Demo de arrastrar nombres */
+      var penta = document.getElementById('pentagrama');
+      var arrastrada = null;
+      function soltar(et) {
+        var vacio = penta.querySelector('.vacio');
+        if (vacio) vacio.remove();
+        penta.appendChild(et);
+      }
+      document.querySelectorAll('.etiqueta').forEach(function (et) {
+        et.addEventListener('dragstart', function () { arrastrada = et; });
+        et.addEventListener('click', function () {
+          if (et.parentNode === penta) document.getElementById('etiquetas').appendChild(et);
+          else soltar(et);
+        });
+      });
+      penta.addEventListener('dragover', function (e) { e.preventDefault(); penta.classList.add('sobre'); });
+      penta.addEventListener('dragleave', function () { penta.classList.remove('sobre'); });
+      penta.addEventListener('drop', function (e) {
+        e.preventDefault();
+        penta.classList.remove('sobre');
+        if (arrastrada) soltar(arrastrada);
+        arrastrada = null;
+      });
+
+      /* Demo de parejas */
+      document.querySelectorAll('.pareja').forEach(function (par) {
+        var bs = par.querySelectorAll('button');
+        bs.forEach(function (b) {
+          b.addEventListener('click', function () {
+            bs.forEach(function (x) { x.setAttribute('aria-pressed', x === b); });
+          });
+        });
+      });
+
+      /* Calculadora de nota */
+      var est = document.getElementById('estructura');
+      var aci = document.getElementById('aciertos');
+      function fmt(n) { return (Math.round(n * 100) / 100).toString().replace('.', ','); }
+      function calc() {
+        var e = parseFloat(est.value);
+        var d = parseInt(aci.value, 10) * 2.5;
+        document.getElementById('oEstructura').textContent = fmt(e);
+        document.getElementById('oAciertos').textContent = aci.value;
+        document.getElementById('oDescripcion').textContent = fmt(d);
+        document.getElementById('oFinal').textContent = fmt((e + d) / 2);
+      }
+      est.addEventListener('input', calc);
+      aci.addEventListener('input', calc);
+      calc();
+    })();
+  </script>
+</body>
+</html>
