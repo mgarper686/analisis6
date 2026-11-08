@@ -3,641 +3,550 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Clase en directo · Períodos clásicos</title>
-  <meta name="description" content="Cómo participar en la clase en directo de períodos clásicos: lo que tienes que hacer en cada momento.">
+  <title>Clase en directo: cómo participar</title>
+  <meta name="description" content="Periodos clásicos · lo que tienes que hacer en cada momento de la clase en directo.">
   <meta name="author" content="Miguel García Pérez">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Sora:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --verde-osc: #0f3d3e;
-      --verde: #1c7c7d;
-      --verde-claro: #d5ece8;
-      --naranja: #ff8a4c;
-      --naranja-osc: #f0722f;
-      --amarillo: #ffd166;
-      --morado: #8e6bd1;
-      --fondo: #f4f7f6;
-      --tinta: #12292a;
-      --tinta-suave: #4a6061;
-      --linea: #dce5e3;
+      --azul: #1e2235;
+      --tinta: #1f2430;
+      --gris: #5b6070;
+      --tarjeta: #faf9f6;
+      --borde: #dcdbd2;
+      --amarillo: #ffd21f;
+      --amarillo-fondo: #fff7d6;
+      --amarillo-borde: #f1c936;
+      --verde-fondo: #e7f5ec;
+      --verde-borde: #2fb35a;
+      --verde-texto: #17803d;
+      --rosa-fondo: #fde8f4;
+      --rosa-borde: #d93fb2;
+      --morado: #d23fd0;
+      --rojo: #d93a3a;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; background: var(--fondo); }
+    html { background: #eceae4; }
     body {
-      font-family: 'DM Sans', system-ui, sans-serif;
-      font-size: 1.1rem;
-      line-height: 1.6;
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 15px;
+      line-height: 1.5;
       color: var(--tinta);
-      background: var(--fondo);
+      background: #eceae4;
+      padding: 24px 16px 40px;
     }
-    a, button { font: inherit; }
-    a:focus-visible, button:focus-visible, input:focus-visible {
-      outline: 3px solid var(--naranja);
-      outline-offset: 3px;
-    }
+    a { color: inherit; }
+    button { font: inherit; color: inherit; }
+    :focus-visible { outline: 3px solid var(--rosa-borde); outline-offset: 3px; }
 
-    /* ---------- CABECERA ---------- */
-    .cabecera {
-      background: var(--verde-osc);
-      color: #f3f7f5;
-      padding: 1.6rem 1.25rem 2.2rem;
-    }
-    .cabecera-in { max-width: 1000px; margin: 0 auto; }
-    .volver {
-      display: inline-block;
-      color: #b9d9d3;
-      text-decoration: none;
-      font-size: 0.95rem;
-      margin-bottom: 1.2rem;
-    }
-    .volver:hover { color: var(--amarillo); }
-    .etiqueta-sup {
-      display: inline-block;
-      font-weight: 700;
-      font-size: 0.9rem;
-      background: var(--amarillo);
-      color: var(--verde-osc);
-      border-radius: 999px;
-      padding: 0.15rem 0.9rem;
-    }
-    h1 {
-      font-family: 'Sora', sans-serif;
-      font-size: clamp(2rem, 5vw, 3rem);
-      line-height: 1.05;
-      letter-spacing: -0.02em;
-      margin-top: 0.7rem;
-    }
-    .lema { color: #b9d9d3; margin-top: 0.6rem; }
-
-    main { max-width: 1000px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
-    h2 {
-      font-family: 'Sora', sans-serif;
-      font-size: 1.5rem;
-      letter-spacing: -0.02em;
-      margin: 2.4rem 0 1rem;
-    }
-    h2:first-child { margin-top: 0; }
-
-    /* ---------- PASOS: NAVEGADOR ---------- */
-    .barra-pasos {
+    .arriba {
+      max-width: 900px;
+      margin: 0 auto 12px;
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      gap: 1rem;
+      align-items: center;
+      gap: 12px;
       flex-wrap: wrap;
-      margin-bottom: 1rem;
+      font-size: 14px;
     }
-    .puntos { display: flex; gap: 0.4rem; flex-wrap: wrap; list-style: none; }
-    .punto {
-      width: 42px; height: 42px;
-      border-radius: 12px;
-      border: 2px solid var(--linea);
+    .arriba a { text-decoration: none; color: var(--gris); }
+    .arriba a:hover { color: var(--tinta); text-decoration: underline; }
+    .arriba-der { display: flex; gap: 8px; align-items: center; }
+    .contador {
+      font-weight: 600;
+      color: var(--gris);
+    }
+    .boton-sup {
+      border: 1.5px solid var(--azul);
       background: #fff;
-      color: var(--tinta);
-      font-family: 'Sora', sans-serif;
-      font-weight: 700;
-      cursor: pointer;
-      transition: background 0.15s, border-color 0.15s;
-    }
-    .punto:hover { border-color: var(--verde); }
-    .punto.visto { background: var(--verde-claro); border-color: var(--verde-claro); }
-    .punto[aria-current="step"] { background: var(--naranja); border-color: var(--naranja); color: var(--verde-osc); }
-    .ver-todos {
-      border: 2px solid var(--verde);
-      background: transparent;
-      color: var(--verde);
-      font-weight: 700;
       border-radius: 999px;
-      padding: 0.35rem 1rem;
+      padding: 3px 12px;
+      font-weight: 600;
+      font-size: 13px;
       cursor: pointer;
     }
-    .ver-todos:hover { background: var(--verde); color: #fff; }
+    .boton-sup:hover { background: var(--azul); color: #fff; }
 
-    .progreso { height: 6px; background: var(--linea); border-radius: 99px; overflow: hidden; margin-bottom: 1.2rem; }
-    .progreso span { display: block; height: 100%; background: var(--naranja); width: 0; transition: width 0.25s; }
-
-    /* ---------- TARJETA DE PASO ---------- */
-    .pasos { display: grid; gap: 1.2rem; }
-    .paso {
-      display: none;
+    /* ---------- HOJA ---------- */
+    .hoja {
+      max-width: 900px;
+      margin: 0 auto;
       background: #fff;
-      border: 1px solid var(--linea);
-      border-radius: 18px;
-      padding: 1.8rem 2rem;
+      padding: 48px 52px 22px;
+      border-radius: 4px;
+      box-shadow: 0 2px 18px rgba(0, 0, 0, 0.08);
     }
-    .paso.activo { display: block; animation: entra 0.25s ease; }
-    .todos .paso { display: block; animation: none; }
-    @keyframes entra { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
-    .paso-cab { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
-    .paso-num {
+    .cabecera {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 24px;
+      padding-bottom: 18px;
+      border-bottom: 4px solid var(--azul);
+    }
+    .cabecera-texto { padding-top: 34px; }
+    h1 {
+      font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+      font-weight: 700;
+      font-size: clamp(28px, 5vw, 42px);
+      line-height: 1.1;
+      color: var(--azul);
+      letter-spacing: -0.01em;
+    }
+    h1 mark {
+      background: linear-gradient(to bottom, transparent 42%, var(--amarillo) 42%, var(--amarillo) 92%, transparent 92%);
+      color: inherit;
+      padding: 0 4px;
+    }
+    .subtitulo {
+      margin-top: 8px;
+      font-size: 16px;
+      color: var(--gris);
+      letter-spacing: 0.01em;
+    }
+    .qr {
       flex-shrink: 0;
-      width: 68px; height: 68px;
-      display: grid; place-items: center;
-      background: var(--naranja);
-      border-radius: 18px;
-      font-size: 2rem;
+      width: 132px;
+      text-align: center;
+      background: none;
+      border: 0;
+      cursor: zoom-in;
+    }
+    .qr img { width: 118px; height: 118px; display: block; margin: 0 auto 4px; image-rendering: pixelated; }
+    .qr span { display: block; font-size: 10.5px; line-height: 1.3; color: var(--gris); }
+
+    /* ---------- PASOS ---------- */
+    .pasos {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      margin-top: 24px;
+    }
+    .paso {
       position: relative;
+      background: var(--tarjeta);
+      border: 1.5px solid var(--borde);
+      border-radius: 14px;
+      padding: 38px 18px 18px;
+      margin-top: 14px;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
     }
-    .paso-num b {
+    .paso:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(30, 34, 53, 0.1); }
+    .paso.amarillo { background: var(--amarillo-fondo); border-color: var(--amarillo-borde); }
+    .paso.verde { background: var(--verde-fondo); border-color: var(--verde-borde); }
+    .paso.rosa { background: var(--rosa-fondo); border-color: var(--rosa-borde); }
+
+    .num {
       position: absolute;
-      bottom: -8px; right: -8px;
-      width: 28px; height: 28px;
-      display: grid; place-items: center;
-      background: var(--verde-osc);
-      color: #fff;
+      top: -14px;
+      left: 14px;
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
       border-radius: 50%;
-      font-family: 'Sora', sans-serif;
-      font-size: 0.9rem;
-    }
-    .paso h3 {
-      font-family: 'Sora', sans-serif;
-      font-size: 1.6rem;
-      letter-spacing: -0.02em;
-      line-height: 1.15;
-    }
-    .paso p { color: var(--tinta-suave); max-width: 62ch; }
-    .paso p + p, .paso p + .extra, .paso .extra + p { margin-top: 0.8rem; }
-
-    .boton-demo {
-      display: inline-block;
-      background: var(--verde-osc);
+      background: var(--azul);
       color: #fff;
-      border-radius: 8px;
-      padding: 0 0.5rem;
       font-weight: 700;
-      font-size: 0.95em;
+      font-size: 15px;
+      transition: background 0.15s;
+    }
+    .paso.hecho .num { background: var(--verde-borde); }
+    .paso.hecho .num::after { content: '✓'; }
+    .paso.hecho .num span { display: none; }
+    .paso.hecho::after {
+      content: 'Hecho';
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--verde-texto);
+      background: #fff;
+      border: 1.5px solid var(--verde-borde);
+      border-radius: 999px;
+      padding: 0 8px;
+    }
+
+    .emoji { font-size: 34px; line-height: 1; display: block; margin-top: -14px; margin-bottom: 8px; }
+    .paso h2 { font-size: 17.5px; font-weight: 700; line-height: 1.25; margin-bottom: 6px; color: var(--azul); }
+    .paso p { font-size: 14px; line-height: 1.5; }
+    b, strong { font-weight: 700; }
+
+    /* Botoncitos y etiquetas como en la infografía */
+    .bt {
+      display: inline-block;
+      border: 1.5px solid var(--azul);
+      border-radius: 7px;
+      padding: 0 6px;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.5;
+      background: #fff;
       white-space: nowrap;
+      vertical-align: 1px;
     }
+    .bt.am { background: var(--amarillo); border-color: #c99d00; }
+    .bt.mo { background: var(--morado); border-color: var(--morado); color: #fff; }
+    .bien { color: var(--verde-texto); font-weight: 700; }
+    .mal { color: var(--rojo); text-decoration: line-through; }
 
-    .extra {
-      margin-top: 1rem;
-      padding: 1rem 1.2rem;
-      background: var(--fondo);
-      border-radius: 12px;
-    }
-
-    /* Demo de colores (paso 5) */
-    .recuadros { display: flex; gap: 0.6rem; flex-wrap: wrap; margin: 0.6rem 0 1rem; }
-    .recuadro {
-      padding: 0.5rem 0.9rem;
-      border-radius: 8px;
-      border: 3px solid;
+    /* Parejas del paso 9 */
+    .par {
+      display: inline;
       font-weight: 700;
-      font-size: 0.95rem;
     }
-    .recuadro.ant { border-color: #e6b400; background: rgba(255, 209, 102, 0.25); }
-    .recuadro.con { border-color: var(--morado); background: rgba(142, 107, 209, 0.15); }
-    .etiquetas { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-    .etiqueta {
-      background: #fff;
-      border: 2px dashed var(--verde);
-      color: var(--verde-osc);
-      border-radius: 8px;
-      padding: 0.25rem 0.7rem;
-      font-weight: 700;
-      font-size: 0.9rem;
-      cursor: grab;
-      user-select: none;
-    }
-    .etiqueta:active { cursor: grabbing; }
-    .pentagrama {
-      margin-top: 0.8rem;
-      min-height: 70px;
-      border-radius: 10px;
-      background:
-        repeating-linear-gradient(to bottom, transparent 0 11px, #c7d3d1 11px 12px) 0 10px / 100% 60px no-repeat,
-        #fff;
-      border: 1px solid var(--linea);
-      display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: flex-start;
-      padding: 0.5rem;
-      transition: background-color 0.15s;
-    }
-    .pentagrama.sobre { outline: 3px dashed var(--naranja); }
-    .pentagrama .vacio { color: var(--tinta-suave); font-size: 0.9rem; background: #fff; padding: 0 0.3rem; }
-
-    /* Demo de parejas (paso 9) */
-    .parejas { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.6rem; margin-top: 0.8rem; }
-    .pareja { display: flex; border-radius: 10px; overflow: hidden; border: 2px solid var(--linea); }
-    .pareja button {
-      flex: 1;
-      border: 0;
-      background: #fff;
-      padding: 0.45rem 0.4rem;
+    .op {
       cursor: pointer;
-      font-size: 0.95rem;
-      color: var(--tinta);
-    }
-    .pareja button + button { border-left: 2px solid var(--linea); }
-    .pareja button[aria-pressed="true"] { background: var(--verde); color: #fff; font-weight: 700; }
-
-    .nav-paso { display: flex; justify-content: space-between; gap: 1rem; margin-top: 1.6rem; }
-    .todos .nav-paso { display: none; }
-    .nav-paso button {
+      border-radius: 4px;
+      padding: 0 2px;
+      background: none;
       border: 0;
-      border-radius: 12px;
-      padding: 0.7rem 1.3rem;
       font-weight: 700;
-      cursor: pointer;
-      background: var(--naranja);
-      color: var(--verde-osc);
+      font-size: inherit;
+      line-height: inherit;
     }
-    .nav-paso button:hover { background: var(--naranja-osc); }
-    .nav-paso button.sec { background: var(--verde-claro); }
-    .nav-paso button.sec:hover { background: #bfe0da; }
-    .nav-paso button:disabled { visibility: hidden; }
-    .pista-teclado { font-size: 0.9rem; color: var(--tinta-suave); margin-top: 0.6rem; }
-    .todos ~ .pista-teclado { display: none; }
+    .op:hover { background: rgba(217, 63, 178, 0.15); }
+    .op[aria-pressed="true"] { background: var(--rosa-borde); color: #fff; }
+
+    /* ---------- NOTA FINAL ---------- */
+    .final {
+      display: flex;
+      gap: 22px;
+      align-items: center;
+      margin-top: 22px;
+      background: var(--verde-fondo);
+      border: 1.5px solid var(--verde-borde);
+      border-radius: 14px;
+      padding: 18px 24px;
+    }
+    .final > .emoji { font-size: 36px; margin: 0; }
+    .final h2 { font-size: 16px; font-weight: 700; margin-bottom: 6px; color: var(--azul); }
+    .final p { font-size: 14.5px; }
+    .final p + p { margin-top: 6px; }
+
+    .calc { margin-top: 10px; }
+    .calc summary {
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 13.5px;
+      color: var(--verde-texto);
+      list-style: none;
+    }
+    .calc summary::-webkit-details-marker { display: none; }
+    .calc summary::before { content: '▸ '; }
+    .calc[open] summary::before { content: '▾ '; }
+    .calc-in {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 22px;
+      align-items: center;
+      margin-top: 8px;
+      font-size: 13.5px;
+    }
+    .calc label { display: flex; align-items: center; gap: 8px; }
+    .calc input { accent-color: var(--verde-borde); width: 130px; }
+    .calc output { font-weight: 700; min-width: 2.5em; display: inline-block; }
+    .calc .res {
+      background: #fff;
+      border: 1.5px solid var(--verde-borde);
+      border-radius: 8px;
+      padding: 2px 10px;
+      font-weight: 700;
+    }
 
     /* ---------- CONSEJOS ---------- */
-    .consejos { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 0.9rem; }
+    .consejos {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+      margin-top: 22px;
+    }
     .consejo {
-      background: var(--verde-osc);
-      color: #f3f7f5;
-      border-radius: 14px;
-      padding: 1.1rem 1.2rem;
+      border-left: 5px solid var(--azul);
+      padding: 2px 0 10px 12px;
+      font-size: 13.5px;
+      line-height: 1.45;
     }
-    .consejo strong { display: block; font-family: 'Sora', sans-serif; font-size: 1.05rem; margin-bottom: 0.3rem; }
-    .consejo p { color: #cfe6e1; font-size: 0.98rem; line-height: 1.45; }
-    .consejo .ic { font-size: 1.6rem; display: block; margin-bottom: 0.3rem; }
-    .consejo .mini { display: inline-block; background: rgba(255,255,255,0.15); border-radius: 6px; padding: 0 0.4rem; color: #fff; }
+    .consejo h3 { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
 
-    /* ---------- NOTAS ---------- */
-    .notas {
-      background: #fff;
-      border: 1px solid var(--linea);
-      border-radius: 18px;
-      padding: 1.8rem 2rem;
-    }
-    .formula {
-      font-family: 'Sora', sans-serif;
-      font-weight: 600;
-      font-size: 1.15rem;
-      background: var(--amarillo);
-      color: var(--verde-osc);
-      border-radius: 12px;
-      padding: 0.8rem 1.1rem;
-      margin-bottom: 1.2rem;
-    }
-    .calc { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.2rem; align-items: end; }
-    .calc label { display: block; font-weight: 700; font-size: 0.95rem; margin-bottom: 0.3rem; }
-    .calc input[type=range] { width: 100%; accent-color: var(--verde); }
-    .calc output { font-family: 'Sora', sans-serif; font-weight: 700; }
-    .resultado {
-      background: var(--verde-osc);
-      color: #fff;
-      border-radius: 14px;
-      padding: 0.9rem 1.1rem;
+    .pie {
+      margin-top: 24px;
       text-align: center;
+      font-size: 11.5px;
+      color: var(--gris);
     }
-    .resultado span { display: block; font-size: 0.9rem; color: #b9d9d3; }
-    .resultado output { font-size: 2.2rem; line-height: 1.1; }
-    .lista-notas { list-style: none; margin-top: 1.4rem; display: grid; gap: 0.8rem; }
-    .lista-notas li { display: flex; gap: 0.8rem; color: var(--tinta-suave); }
-    .lista-notas li > span:first-child { font-size: 1.4rem; line-height: 1.3; }
-    .lista-notas strong { color: var(--tinta); }
+    .pie a { text-decoration: none; }
+    .pie a:hover { text-decoration: underline; }
 
-    .cta {
-      display: flex; align-items: center; gap: 0.9rem;
-      margin-top: 2.4rem;
-      text-decoration: none;
-      padding: 1rem 1.3rem;
-      border-radius: 12px;
-      background: var(--verde);
-      color: #fff;
-      max-width: 460px;
+    /* ---------- QR AMPLIADO ---------- */
+    .velo {
+      position: fixed;
+      inset: 0;
+      background: rgba(30, 34, 53, 0.85);
+      display: none;
+      place-items: center;
+      z-index: 10;
+      cursor: zoom-out;
+      padding: 20px;
     }
-    .cta:hover { background: var(--verde-osc); }
-    .cta strong { display: block; font-family: 'Sora', sans-serif; }
-    .cta .flecha { margin-left: auto; font-size: 1.2rem; }
+    .velo.abierto { display: grid; }
+    .velo div { background: #fff; border-radius: 16px; padding: 24px; text-align: center; max-width: 90vw; }
+    .velo img { width: min(70vmin, 520px); height: auto; image-rendering: pixelated; display: block; }
+    .velo p { margin-top: 10px; font-weight: 600; color: var(--gris); }
 
-    footer { text-align: center; color: var(--tinta-suave); font-size: 0.9rem; padding: 0 1.25rem 2rem; }
-
-    @media (max-width: 600px) {
-      .paso, .notas { padding: 1.4rem 1.2rem; }
-      .paso h3 { font-size: 1.35rem; }
-      .paso-num { width: 56px; height: 56px; font-size: 1.6rem; }
-      .punto { width: 36px; height: 36px; }
+    /* ---------- MÓVIL ---------- */
+    @media (max-width: 780px) {
+      .hoja { padding: 30px 22px 18px; }
+      .pasos { grid-template-columns: repeat(2, 1fr); }
+      .consejos { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 540px) {
+      body { padding: 12px 8px 30px; }
+      .hoja { padding: 24px 16px 16px; }
+      .cabecera { flex-direction: column-reverse; align-items: stretch; }
+      .cabecera-texto { padding-top: 0; }
+      .qr { align-self: flex-end; width: 100px; }
+      .qr img { width: 86px; height: 86px; }
+      .pasos { grid-template-columns: 1fr; gap: 14px; }
+      .final { flex-direction: column; align-items: flex-start; gap: 8px; padding: 16px; }
+      .consejos { grid-template-columns: 1fr; }
     }
     @media (prefers-reduced-motion: reduce) {
-      html { scroll-behavior: auto; }
-      .paso.activo { animation: none; }
-      .progreso span { transition: none; }
+      .paso, .num { transition: none; }
+      .paso:hover { transform: none; }
     }
     @media print {
-      .cabecera { background: none; color: var(--tinta); padding-bottom: 0; }
-      .volver, .barra-pasos, .progreso, .nav-paso, .pista-teclado, .cta { display: none !important; }
-      .paso { display: block !important; break-inside: avoid; }
-      .consejo { background: var(--verde-claro); color: var(--tinta); }
-      .consejo p { color: var(--tinta-suave); }
+      @page { size: A4; margin: 10mm; }
+      html, body { background: #fff; padding: 0; }
+      .arriba, .calc, .velo { display: none !important; }
+      .hoja { box-shadow: none; padding: 0; max-width: none; }
+      .paso:hover { transform: none; box-shadow: none; }
+      .paso.hecho::after { display: none; }
+      .paso.hecho .num { background: var(--azul); }
+      .paso.hecho .num::after { content: none; }
+      .paso.hecho .num span { display: inline; }
+      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     }
   </style>
 </head>
 <body>
 
-  <header class="cabecera">
-    <div class="cabecera-in">
-      <a class="volver" href="https://mgarper686.github.io/analisis6/#periodos">← Volver a Análisis musical</a><br>
-      <span class="etiqueta-sup">Períodos clásicos · UD 2</span>
-      <h1>Clase en directo:<br>cómo participar</h1>
-      <p class="lema">Lo que tienes que hacer en cada momento</p>
+  <div class="arriba">
+    <a href="https://mgarper686.github.io/analisis6/#periodos">← Volver a Análisis musical</a>
+    <div class="arriba-der">
+      <span class="contador" id="contador" aria-live="polite">Toca cada paso al hacerlo · 0 de 9</span>
+      <button class="boton-sup" id="reiniciar">Reiniciar</button>
+      <button class="boton-sup" onclick="window.print()">Imprimir</button>
     </div>
-  </header>
+  </div>
 
-  <main>
+  <article class="hoja">
 
-    <h2>Paso a paso</h2>
-
-    <div class="barra-pasos">
-      <ol class="puntos" id="puntos" aria-label="Pasos"></ol>
-      <button class="ver-todos" id="verTodos" aria-pressed="false">Ver todos los pasos</button>
-    </div>
-    <div class="progreso" aria-hidden="true"><span id="barra"></span></div>
-
-    <div class="pasos" id="pasos">
-
-      <article class="paso" data-titulo="Entra">
-        <div class="paso-cab">
-          <div class="paso-num" aria-hidden="true">📱<b>1</b></div>
-          <h3>Entra</h3>
-        </div>
-        <p>Escanea el QR que enseña el profe en clase: te lleva directamente a la página.</p>
-        <p>Desde el ordenador: entra en la página, pulsa <span class="boton-demo">Unirme a la clase</span> y escribe el <strong>código de 4 cifras</strong>.</p>
-      </article>
-
-      <article class="paso" data-titulo="Di quién eres">
-        <div class="paso-cab">
-          <div class="paso-num" aria-hidden="true">🙋<b>2</b></div>
-          <h3>Di quién eres</h3>
-        </div>
-        <p>Escribe tu nombre y, si sale la lista, elige el tuyo. <strong>Usa siempre el mismo</strong>: ahí se guardan tus notas.</p>
-        <p>Después, elige un compositor o compositora.</p>
-      </article>
-
-      <article class="paso" data-titulo="¿Compositor repetido?">
-        <div class="paso-cab">
-          <div class="paso-num" aria-hidden="true">⚔️<b>3</b></div>
-          <h3>¿Compositor repetido?</h3>
-        </div>
-        <p>Si alguien más eligió el mismo, sale una pregunta sobre él o ella.</p>
-        <p><strong>Quien acierta antes se lo queda</strong>; quien pierde elige otro distinto.</p>
-      </article>
-
-      <article class="paso" data-titulo="Escucha">
-        <div class="paso-cab">
-          <div class="paso-num" aria-hidden="true">🎧<b>4</b></div>
-          <h3>Escucha</h3>
-        </div>
-        <p>Verás la partitura en blanco. La música la pone el profe.</p>
-        <p>Fíjate en las <strong>frases</strong>, las <strong>semifrases</strong>, las <strong>cadencias</strong>…</p>
-      </article>
-
-      <article class="paso" data-titulo="Colorea (con permiso)">
-        <div class="paso-cab">
-          <div class="paso-num" aria-hidden="true">✏️<b>5</b></div>
-          <h3>Colorea (con permiso)</h3>
-        </div>
-        <p>Solo cuando el profe dé permiso. Marca cada semifrase con su recuadro y pon el nombre de cada frase (el corchete es opcional).</p>
-        <div class="extra">
-          <div class="recuadros">
-            <span class="recuadro ant">Amarillo · semifrase antecedente</span>
-            <span class="recuadro con">Morado · semifrase consecuente</span>
-          </div>
-          <p><strong>Pruébalo:</strong> arrastra los nombres al pentagrama (o tócalos en el móvil).</p>
-          <div class="etiquetas" id="etiquetas">
-            <span class="etiqueta" draggable="true">FRASE ANTECEDENTE</span>
-            <span class="etiqueta" draggable="true">FRASE CONSECUENTE</span>
-            <span class="etiqueta" draggable="true">Ampliación interna</span>
-          </div>
-          <div class="pentagrama" id="pentagrama" aria-label="Pentagrama de prueba">
-            <span class="vacio">Suelta aquí los nombres</span>
-          </div>
-        </div>
-      </article>
-
-      <article class="paso" data-titulo="Envía">
-        <div class="paso-cab">
-          <div class="paso-num" aria-hidden="true">📤<b>6</b></div>
-          <h3>Envía</h3>
-        </div>
-        <p>Pulsa <span class="boton-demo">📤 Enviar</span>. <strong>Ya no podrás cambiar nada</strong>, así que revisa antes.</p>
-        <p>Espera a que el profe corrija.</p>
-      </article>
-
-      <article class="paso" data-titulo="Nota de la estructura">
-        <div class="paso-cab">
-          <div class="paso-num" aria-hidden="true">✅<b>7</b></div>
-          <h3>Nota de la estructura</h3>
-        </div>
-        <p>Sale tu nota sobre 10: frases, semifrases y ampliaciones.</p>
-        <p>Cuenta que el nombre esté <strong>en su tramo</strong>, aunque no esté en el pentagrama exacto.</p>
-      </article>
-
-      <article class="paso" data-titulo="Sigue al profe">
-        <div class="paso-cab">
-          <div class="paso-num" aria-hidden="true">👀<b>8</b></div>
-          <h3>Sigue al profe</h3>
-        </div>
-        <p>Tu pantalla se limpia y el análisis aparece a la vez que suena.</p>
-        <p>Puedes guardarlo con <span class="boton-demo">⬇ PDF</span> o <span class="boton-demo">⬇ JPG</span>.</p>
-      </article>
-
-      <article class="paso" data-titulo="Describe el periodo">
-        <div class="paso-cab">
-          <div class="paso-num" aria-hidden="true">❓<b>9</b></div>
-          <h3>Describe el periodo</h3>
-        </div>
-        <p>Elige una opción de cada pareja. Cada acierto vale <strong>2,5 puntos</strong>. Al corregir verás ✓ en lo que está bien y tachado lo que está mal.</p>
-        <div class="extra">
-          <p><strong>Así se ve</strong> (prueba a elegir):</p>
-          <div class="parejas" id="parejas">
-            <div class="pareja"><button aria-pressed="false">binario</button><button aria-pressed="false">ternario</button></div>
-            <div class="pareja"><button aria-pressed="false">paralelo</button><button aria-pressed="false">contrastante</button></div>
-            <div class="pareja"><button aria-pressed="false">simétrico</button><button aria-pressed="false">asimétrico</button></div>
-            <div class="pareja"><button aria-pressed="false">abierto</button><button aria-pressed="false">cerrado</button></div>
-          </div>
-        </div>
-      </article>
-
-    </div>
-
-    <div class="nav-paso" id="navPaso">
-      <button class="sec" id="anterior">← Anterior</button>
-      <button id="siguiente">Siguiente →</button>
-    </div>
-    <p class="pista-teclado">También puedes pasar de paso con las flechas ← → del teclado.</p>
-
-    <h2>Si algo falla</h2>
-    <div class="consejos">
-      <div class="consejo">
-        <span class="ic" aria-hidden="true">🔄</span>
-        <strong>¿Sin señal?</strong>
-        <p>Pulsa <span class="mini">🔄</span> en tu barra: vuelve a pedir el estado de la clase.</p>
+    <header class="cabecera">
+      <div class="cabecera-texto">
+        <h1>Clase en directo: <mark>cómo participar</mark></h1>
+        <p class="subtitulo">Periodos clásicos · lo que tienes que hacer en cada momento</p>
       </div>
-      <div class="consejo">
-        <span class="ic" aria-hidden="true">↻</span>
-        <strong>¿Recargas (F5)?</strong>
-        <p>No pierdes nada: vuelves a la clase con lo que llevabas.</p>
-      </div>
-      <div class="consejo">
-        <span class="ic" aria-hidden="true">📌</span>
-        <strong>En el móvil</strong>
-        <p>Con «Partitura fija» activado, no se mueve al dibujar. Para moverla, usa <span class="mini">✋ Desplazar</span>.</p>
-      </div>
-      <div class="consejo">
-        <span class="ic" aria-hidden="true">🔇</span>
-        <strong>Sin audio</strong>
-        <p>En clase solo suena en el ordenador del profe. Para practicar en casa: contraseña de práctica.</p>
-      </div>
-    </div>
+      <button class="qr" id="qr" aria-label="Ampliar el código QR">
+        <img src="data:image/png;base64,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" alt="Código QR de la página de periodos clásicos">
+        <span>Escanea el QR que enseña el profe en clase (este lleva a la página)</span>
+      </button>
+    </header>
 
-    <h2>Tus notas</h2>
-    <section class="notas">
-      <p class="formula">🏁 Nota final del periodo = media de estructura y descripción</p>
+    <section class="pasos" aria-label="Pasos">
 
-      <div class="calc">
-        <div>
-          <label for="estructura">Nota de la estructura: <output id="oEstructura">7</output></label>
-          <input type="range" id="estructura" min="0" max="10" step="0.5" value="7">
-        </div>
-        <div>
-          <label for="aciertos">Parejas acertadas: <output id="oAciertos">3</output> de 4 (<output id="oDescripcion">7,5</output>)</label>
-          <input type="range" id="aciertos" min="0" max="4" step="1" value="3">
-        </div>
-        <div class="resultado" aria-live="polite">
-          <span>Nota final del periodo</span>
-          <output id="oFinal">7,25</output>
-        </div>
+      <div class="paso" tabindex="0" role="button" aria-pressed="false">
+        <span class="num"><span>1</span></span>
+        <span class="emoji" aria-hidden="true">📱</span>
+        <h2>Entra</h2>
+        <p>Escanea el <b>QR del profe</b>. Desde el ordenador: entra en la página, pulsa <span class="bt">Unirme a la clase</span> y escribe el <b>código de 4 cifras</b>.</p>
       </div>
 
-      <ul class="lista-notas">
-        <li><span aria-hidden="true">➕</span><span><strong>Tus notas se van sumando</strong> periodo a periodo. Si faltas a uno, ese cuenta 0.</span></li>
-        <li><span aria-hidden="true">📒</span><span>En <strong>Mis notas</strong> ves cada nota, la suma y la media, y puedes repasar tus respuestas.</span></li>
-        <li><span aria-hidden="true">🏆</span><span>Pulsa <strong>Ranking</strong> en cualquier momento: verás tu posición (p. ej. «3º de 24 · 41,5 puntos») y la de toda la clase, ordenada por la suma.</span></li>
-      </ul>
+      <div class="paso" tabindex="0" role="button" aria-pressed="false">
+        <span class="num"><span>2</span></span>
+        <span class="emoji" aria-hidden="true">🙋</span>
+        <h2>Di quién eres</h2>
+        <p>Escribe tu nombre y, si sale la lista, <b>elige el tuyo</b>. Usa siempre el mismo: ahí se guardan tus notas. Elige un compositor/a.</p>
+      </div>
+
+      <div class="paso" tabindex="0" role="button" aria-pressed="false">
+        <span class="num"><span>3</span></span>
+        <span class="emoji" aria-hidden="true">⚔️</span>
+        <h2>¿Compositor repetido?</h2>
+        <p>Si alguien más eligió el mismo, <b>sale una pregunta sobre él/ella</b>. Quien acierta antes se lo queda; quien pierde elige otro distinto.</p>
+      </div>
+
+      <div class="paso" tabindex="0" role="button" aria-pressed="false">
+        <span class="num"><span>4</span></span>
+        <span class="emoji" aria-hidden="true">🎧</span>
+        <h2>Escucha</h2>
+        <p>Verás la <b>partitura en blanco</b>. La música la pone el profe. Fíjate en las frases, las semifrases, las cadencias…</p>
+      </div>
+
+      <div class="paso amarillo" tabindex="0" role="button" aria-pressed="false">
+        <span class="num"><span>5</span></span>
+        <span class="emoji" aria-hidden="true">✏️</span>
+        <h2>Colorea (con permiso)</h2>
+        <p>Cuando el profe dé permiso: <span class="bt">Recuadro</span> <span class="bt am">amarillo</span> semifrase antecedente, <span class="bt mo">morado</span> consecuente; el <b>nombre de cada frase</b> (el corchete es opcional). <b>Arrastra los nombres</b>: <span class="bt">FRASE ANTECEDENTE</span> <span class="bt">Bar 1</span> <span class="bt">Ampliación interna</span>…</p>
+      </div>
+
+      <div class="paso" tabindex="0" role="button" aria-pressed="false">
+        <span class="num"><span>6</span></span>
+        <span class="emoji" aria-hidden="true">📤</span>
+        <h2>Envía</h2>
+        <p>Pulsa <span class="bt">📤 Enviar</span>. <b>Ya no podrás cambiar nada</b>, así que revisa antes. Espera a que el profe corrija.</p>
+      </div>
+
+      <div class="paso verde" tabindex="0" role="button" aria-pressed="false">
+        <span class="num"><span>7</span></span>
+        <span class="emoji" aria-hidden="true">✅</span>
+        <h2>Nota de la estructura</h2>
+        <p>Sale tu nota <b>sobre 10</b>: frases, semifrases y ampliaciones. Cuenta que el <b>nombre</b> esté en su tramo (aunque no sea en el pentagrama exacto).</p>
+      </div>
+
+      <div class="paso" tabindex="0" role="button" aria-pressed="false">
+        <span class="num"><span>8</span></span>
+        <span class="emoji" aria-hidden="true">👀</span>
+        <h2>Sigue al profe</h2>
+        <p>Tu pantalla se limpia y el análisis aparece <b>a la vez que suena</b>. Puedes guardarlo con <span class="bt">⬇ PDF</span> <span class="bt">⬇ JPG</span>.</p>
+      </div>
+
+      <div class="paso rosa" tabindex="0" role="button" aria-pressed="false">
+        <span class="num"><span>9</span></span>
+        <span class="emoji" aria-hidden="true">❓</span>
+        <h2>Describe el periodo</h2>
+        <p>Elige una opción de cada pareja:<br>
+          <span class="par"><button class="op">binario</button>/<button class="op">ternario</button></span> ·<br>
+          <span class="par"><button class="op">paralelo</button>/<button class="op">contrastante</button></span> ·<br>
+          <span class="par"><button class="op">simétrico</button>/<button class="op">asimétrico</button></span> ·<br>
+          <span class="par"><button class="op">abierto</button>/<button class="op">cerrado</button></span> (2,5 cada una).
+          Verás <span class="bien">✓ bien</span> y <span class="mal">tachado mal</span>.</p>
+      </div>
+
     </section>
 
-    <a class="cta" href="https://mgarper686.github.io/analisis6/periodos-clasicos">
-      <span aria-hidden="true">▶</span>
-      <span><strong>Ir a los ejercicios</strong>Entrar en la clase en directo</span>
-      <span class="flecha" aria-hidden="true">→</span>
-    </a>
+    <section class="final">
+      <span class="emoji" aria-hidden="true">🏁</span>
+      <div>
+        <h2>Nota final del periodo = media de estructura y descripción.</h2>
+        <p>➕ <b>Tus notas se van sumando</b> periodo a periodo (si faltas a uno, ese cuenta 0). En <span class="bt">📒 Mis notas</span> ves cada nota, la <b>suma</b> y la media, y puedes repasar tus respuestas.</p>
+        <p>🏆 Pulsa <span class="bt">🏆 Ranking</span> <b>en cualquier momento</b>: verás tu posición (p. ej. «3º de 24 · 41,5 puntos») y la de toda la clase, ordenada por la suma.</p>
 
-  </main>
+        <details class="calc">
+          <summary>Calcula tu nota del periodo</summary>
+          <div class="calc-in">
+            <label>Estructura <input type="range" id="estructura" min="0" max="10" step="0.5" value="7"> <output id="oE">7</output></label>
+            <label>Parejas acertadas <input type="range" id="aciertos" min="0" max="4" step="1" value="3"> <output id="oA">3 → 7,5</output></label>
+            <span class="res">Nota final: <output id="oF">7,25</output></span>
+          </div>
+        </details>
+      </div>
+    </section>
 
-  <footer>Contenidos elaborados por el profesor Miguel García Pérez</footer>
+    <section class="consejos" aria-label="Si algo falla">
+      <div class="consejo">
+        <h3>🔄 ¿Sin señal?</h3>
+        Pulsa 🔄 en tu barra: vuelve a pedir el estado de la clase.
+      </div>
+      <div class="consejo">
+        <h3>↻ ¿Recargas (F5)?</h3>
+        No pierdes nada: vuelves a la clase con lo que llevabas.
+      </div>
+      <div class="consejo">
+        <h3>📌 En el móvil</h3>
+        «Partitura fija» activado: no se mueve al dibujar. Para moverla, <b>✋ Desplazar</b>.
+      </div>
+      <div class="consejo">
+        <h3>🔇 Sin audio</h3>
+        En clase solo suena en el profe. Para practicar en casa: contraseña de práctica.
+      </div>
+    </section>
+
+    <p class="pie">Periodos clásicos · Análisis 6º · <a href="https://mgarper686.github.io/Scarlatti/periodos-clasicos.html">mgarper686.github.io/Scarlatti/periodos-clasicos.html</a></p>
+
+  </article>
+
+  <div class="velo" id="velo" role="dialog" aria-label="Código QR ampliado">
+    <div>
+      <img src="data:image/png;base64,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" alt="Código QR ampliado">
+      <p>Escanéalo con la cámara del móvil · toca para cerrar</p>
+    </div>
+  </div>
 
   <script>
     (function () {
       var pasos = Array.prototype.slice.call(document.querySelectorAll('.paso'));
-      var cont = document.getElementById('pasos');
-      var puntos = document.getElementById('puntos');
-      var barra = document.getElementById('barra');
-      var ant = document.getElementById('anterior');
-      var sig = document.getElementById('siguiente');
-      var verTodos = document.getElementById('verTodos');
-      var actual = 0;
-      var botones = [];
+      var contador = document.getElementById('contador');
+      var CLAVE = 'info-periodos-hechos';
 
-      pasos.forEach(function (p, i) {
-        var li = document.createElement('li');
-        var b = document.createElement('button');
-        b.className = 'punto';
-        b.textContent = i + 1;
-        b.title = p.dataset.titulo;
-        b.setAttribute('aria-label', 'Paso ' + (i + 1) + ': ' + p.dataset.titulo);
-        b.addEventListener('click', function () {
-          if (cont.classList.contains('todos')) {
-            p.scrollIntoView({ block: 'start' });
-          } else {
-            ir(i);
+      function guardar() {
+        var hechos = pasos.map(function (p) { return p.classList.contains('hecho') ? 1 : 0; });
+        try { localStorage.setItem(CLAVE, JSON.stringify(hechos)); } catch (e) {}
+        var n = hechos.reduce(function (a, b) { return a + b; }, 0);
+        contador.textContent = n === pasos.length ? '¡Todo listo! · 9 de 9' : 'Toca cada paso al hacerlo · ' + n + ' de 9';
+      }
+      function marcar(p, on) {
+        p.classList.toggle('hecho', on);
+        p.setAttribute('aria-pressed', on);
+      }
+
+      try {
+        var previos = JSON.parse(localStorage.getItem(CLAVE) || '[]');
+        pasos.forEach(function (p, i) { if (previos[i]) marcar(p, true); });
+      } catch (e) {}
+      guardar();
+
+      pasos.forEach(function (p) {
+        p.addEventListener('click', function (e) {
+          if (e.target.closest('.op')) return;
+          marcar(p, !p.classList.contains('hecho'));
+          guardar();
+        });
+        p.addEventListener('keydown', function (e) {
+          if ((e.key === 'Enter' || e.key === ' ') && e.target === p) {
+            e.preventDefault();
+            p.click();
           }
         });
-        li.appendChild(b);
-        puntos.appendChild(li);
-        botones.push(b);
       });
 
-      function ir(i) {
-        actual = Math.max(0, Math.min(pasos.length - 1, i));
-        pasos.forEach(function (p, j) { p.classList.toggle('activo', j === actual); });
-        botones.forEach(function (b, j) {
-          if (j === actual) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current');
-          if (j < actual) b.classList.add('visto');
-        });
-        barra.style.width = ((actual + 1) / pasos.length * 100) + '%';
-        ant.disabled = actual === 0;
-        sig.disabled = actual === pasos.length - 1;
-        try { history.replaceState(null, '', '#paso-' + (actual + 1)); } catch (e) {}
-      }
-
-      ant.addEventListener('click', function () { ir(actual - 1); });
-      sig.addEventListener('click', function () { ir(actual + 1); });
-      document.addEventListener('keydown', function (e) {
-        if (cont.classList.contains('todos')) return;
-        if (e.target.tagName === 'INPUT') return;
-        if (e.key === 'ArrowRight') ir(actual + 1);
-        if (e.key === 'ArrowLeft') ir(actual - 1);
+      document.getElementById('reiniciar').addEventListener('click', function () {
+        pasos.forEach(function (p) { marcar(p, false); });
+        document.querySelectorAll('.op').forEach(function (o) { o.setAttribute('aria-pressed', 'false'); });
+        guardar();
       });
 
-      verTodos.addEventListener('click', function () {
-        var on = cont.classList.toggle('todos');
-        verTodos.setAttribute('aria-pressed', on);
-        verTodos.textContent = on ? 'Ver paso a paso' : 'Ver todos los pasos';
-        document.getElementById('navPaso').style.display = on ? 'none' : '';
-        barra.style.width = on ? '100%' : ((actual + 1) / pasos.length * 100) + '%';
-      });
-
-      var m = location.hash.match(/^#paso-(\d+)$/);
-      ir(m ? parseInt(m[1], 10) - 1 : 0);
-
-      /* Demo de arrastrar nombres */
-      var penta = document.getElementById('pentagrama');
-      var arrastrada = null;
-      function soltar(et) {
-        var vacio = penta.querySelector('.vacio');
-        if (vacio) vacio.remove();
-        penta.appendChild(et);
-      }
-      document.querySelectorAll('.etiqueta').forEach(function (et) {
-        et.addEventListener('dragstart', function () { arrastrada = et; });
-        et.addEventListener('click', function () {
-          if (et.parentNode === penta) document.getElementById('etiquetas').appendChild(et);
-          else soltar(et);
-        });
-      });
-      penta.addEventListener('dragover', function (e) { e.preventDefault(); penta.classList.add('sobre'); });
-      penta.addEventListener('dragleave', function () { penta.classList.remove('sobre'); });
-      penta.addEventListener('drop', function (e) {
-        e.preventDefault();
-        penta.classList.remove('sobre');
-        if (arrastrada) soltar(arrastrada);
-        arrastrada = null;
-      });
-
-      /* Demo de parejas */
-      document.querySelectorAll('.pareja').forEach(function (par) {
-        var bs = par.querySelectorAll('button');
-        bs.forEach(function (b) {
-          b.addEventListener('click', function () {
-            bs.forEach(function (x) { x.setAttribute('aria-pressed', x === b); });
+      /* Parejas del paso 9 */
+      document.querySelectorAll('.par').forEach(function (par) {
+        var ops = par.querySelectorAll('.op');
+        ops.forEach(function (o) {
+          o.setAttribute('aria-pressed', 'false');
+          o.addEventListener('click', function () {
+            ops.forEach(function (x) { x.setAttribute('aria-pressed', x === o); });
           });
         });
       });
 
-      /* Calculadora de nota */
+      /* QR ampliado */
+      var velo = document.getElementById('velo');
+      document.getElementById('qr').addEventListener('click', function () { velo.classList.add('abierto'); });
+      velo.addEventListener('click', function () { velo.classList.remove('abierto'); });
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape') velo.classList.remove('abierto'); });
+
+      /* Calculadora */
       var est = document.getElementById('estructura');
       var aci = document.getElementById('aciertos');
       function fmt(n) { return (Math.round(n * 100) / 100).toString().replace('.', ','); }
       function calc() {
-        var e = parseFloat(est.value);
-        var d = parseInt(aci.value, 10) * 2.5;
-        document.getElementById('oEstructura').textContent = fmt(e);
-        document.getElementById('oAciertos').textContent = aci.value;
-        document.getElementById('oDescripcion').textContent = fmt(d);
-        document.getElementById('oFinal').textContent = fmt((e + d) / 2);
+        var e = parseFloat(est.value), d = parseInt(aci.value, 10) * 2.5;
+        document.getElementById('oE').textContent = fmt(e);
+        document.getElementById('oA').textContent = aci.value + ' → ' + fmt(d);
+        document.getElementById('oF').textContent = fmt((e + d) / 2);
       }
       est.addEventListener('input', calc);
       aci.addEventListener('input', calc);
